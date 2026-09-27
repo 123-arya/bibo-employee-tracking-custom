@@ -1,0 +1,13 @@
+# bibomon watch config (Oracle A1). Real file lives at /opt/bibomon/watch.toml
+host = "oracle-a1"
+unit = "bibotracking"
+interval_secs = 60
+window_mins = 5
+# 9-day baseline (2026-09-18..27, per 5m): 4xx median 6 / max 73; 5xx max 4
+threshold_4xx = 100
+threshold_5xx = 10
+repeat_mins = 30
+
+[telegram]
+token = "CHANGE-ME"
+chat_id = "462097600"
