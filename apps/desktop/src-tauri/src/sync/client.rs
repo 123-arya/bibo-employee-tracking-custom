@@ -22,21 +22,6 @@ pub struct BackendClient {
     auth: Arc<AuthState>,
 }
 
-// ---------- public (no token) ----------
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PublicBusiness {
-    pub business_id: String,
-    pub name: String,
-    pub owner_name: String,
-}
-
-/// `GET /v1/public/businesses` wraps the list under `businesses`.
-#[derive(Deserialize)]
-struct PublicBusinessesResp {
-    businesses: Vec<PublicBusiness>,
-}
-
 #[derive(Serialize)]
 struct LoginReq<'a> {
     email: &'a str,
@@ -193,21 +178,6 @@ impl BackendClient {
     }
 
     // ---------- public / auth ----------
-
-    /// `GET /v1/public/businesses` — powers the login picker. No token needed.
-    pub async fn list_businesses(&self) -> Result<Vec<PublicBusiness>, String> {
-        let resp = self
-            .http
-            .get(self.url("/v1/public/businesses"))
-            .send()
-            .await
-            .map_err(net_err)?;
-        if !resp.status().is_success() {
-            return Err(status_err(resp).await);
-        }
-        let parsed: PublicBusinessesResp = resp.json().await.map_err(|e| e.to_string())?;
-        Ok(parsed.businesses)
-    }
 
     /// `POST /v1/auth/login`. On success returns the session (does NOT persist it —
     /// the command stores it so the keychain write is explicit).

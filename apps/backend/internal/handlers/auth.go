@@ -154,16 +154,6 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 	c.JSON(http.StatusOK, pair)
 }
 
-// PublicBusinesses lists businesses + owner names for the login picker (no auth).
-func (h *AuthHandler) PublicBusinesses(c *gin.Context) {
-	list, err := h.store.ListPublicBusinesses(c.Request.Context())
-	if err != nil {
-		serverError(c, err)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"businesses": list})
-}
-
 // Me returns the authenticated user (protected route).
 func (h *AuthHandler) Me(c *gin.Context) {
 	userID, ok := auth.UserID(c)

@@ -106,37 +106,6 @@ func (s *Store) IsMember(ctx context.Context, userID, businessID string) (bool, 
 	return exists, err
 }
 
-// PublicBusiness is the minimal business info shown on the login picker.
-type PublicBusiness struct {
-	BusinessID string `json:"business_id"`
-	Name       string `json:"name"`
-	OwnerName  string `json:"owner_name"`
-}
-
-// ListPublicBusinesses returns all businesses with their owner's display name,
-// for the unauthenticated login picker.
-func (s *Store) ListPublicBusinesses(ctx context.Context) ([]PublicBusiness, error) {
-	rows, err := s.pool.Query(ctx,
-		`SELECT b.id, b.name, u.display_name
-		   FROM businesses b
-		   JOIN users u ON u.id = b.owner_user_id
-		  ORDER BY b.name`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	out := []PublicBusiness{}
-	for rows.Next() {
-		var b PublicBusiness
-		if err := rows.Scan(&b.BusinessID, &b.Name, &b.OwnerName); err != nil {
-			return nil, err
-		}
-		out = append(out, b)
-	}
-	return out, rows.Err()
-}
-
 func normalizeEmail(email string) string {
 	return strings.ToLower(strings.TrimSpace(email))
 }

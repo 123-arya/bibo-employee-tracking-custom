@@ -109,8 +109,6 @@ body** — a synced row cannot claim another user. `business_id` is resolved ser
 from membership. Passwords hashed with argon2id; login rate-limited; HTTPS in prod.
 
 Public (no token):
-- `GET  /v1/public/businesses` → `[{business_id, name, owner_name}]` — powers the
-  "find your company/owner" login picker.
 - `POST /v1/auth/login` `{email, password, business_id?}` → access + refresh.
 - `POST /v1/auth/refresh`.
 

@@ -95,7 +95,6 @@ pub fn run() {
             commands::request_accessibility,
             commands::capture_now,
             commands::browser_link,
-            commands::list_businesses,
             commands::signup_url,
             commands::admin_url,
             commands::admin_businesses,

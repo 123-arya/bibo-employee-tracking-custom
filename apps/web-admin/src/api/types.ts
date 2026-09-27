@@ -1,11 +1,5 @@
 // Shapes mirror the backend contract in docs/11-backend-and-sync.md.
 
-export interface PublicBusiness {
-  business_id: string;
-  name: string;
-  owner_name: string;
-}
-
 /** Persona of a self-signup owner. Personal users have no account at all. */
 export type AccountType = "manager" | "parent";
 

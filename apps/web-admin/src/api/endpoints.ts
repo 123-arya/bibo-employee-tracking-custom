@@ -25,19 +25,11 @@ import type {
   Employee,
   KeystrokeBucket,
   PrivacyAppCategory,
-  PublicBusiness,
   ReportEmployee,
   ScreenshotsResponse,
   Tokens,
   User,
 } from "./types";
-
-// ---------- public ----------
-export function listPublicBusinesses() {
-  return request<{ businesses: PublicBusiness[] }>("/v1/public/businesses", {
-    auth: false,
-  });
-}
 
 // ---------- auth ----------
 export async function login(identifier: string, password: string, business_id?: string) {

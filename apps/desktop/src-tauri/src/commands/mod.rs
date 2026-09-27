@@ -427,7 +427,7 @@ fn err<E: std::fmt::Display>(e: E) -> String {
 // ---------- auth / session (task 51) ----------
 
 use crate::sync::auth::{AuthState, Session};
-use crate::sync::client::{BackendClient, PublicBusiness};
+use crate::sync::client::BackendClient;
 
 /// The backend base URL (compile-time default; env override for dev).
 fn backend_url() -> String {
@@ -629,15 +629,6 @@ pub async fn message_event(
         "event": event, "platform": platform, "version": version, "locale": locale,
     });
     client.message_event(&id, &body).await
-}
-
-/// `GET /v1/public/businesses` — the login picker's list of companies/owners.
-#[tauri::command]
-pub async fn list_businesses(
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<Vec<PublicBusiness>, String> {
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    client.list_businesses().await
 }
 
 /// Log in and persist the session to disk. Wrong credentials surface a clear error

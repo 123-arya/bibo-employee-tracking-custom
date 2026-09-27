@@ -60,7 +60,6 @@ func New(cfg *config.Config, st *store.Store, files *filestore.Store, ret *reten
 	v1 := r.Group("/v1")
 
 	// Public picker (no auth).
-	v1.GET("/public/businesses", authH.PublicBusinesses)
 	// Public download totals (aggregate counts only).
 	v1.GET("/public/stats/downloads", downloadsH.Stats)
 	// Curated sensitive-app list for screenshot privacy mode / skip-list
