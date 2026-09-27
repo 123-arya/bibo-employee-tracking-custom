@@ -31,5 +31,19 @@
     "signOut": "Sign out",
     "localTooltip": "Personal, local-only — no account",
     "setupAgainTooltip": "Sign in with a team or family account"
+  },
+  "messages": {
+    "whatsNewTitle": "What's new in version {{version}}",
+    "gotIt": "Got it",
+    "later": "Remind me later",
+    "close": "Close",
+    "submit": "Submit",
+    "sending": "Sending…",
+    "thanks": "Thanks for your feedback!",
+    "required": "Please answer the required questions.",
+    "error": "Couldn't send. Please try again.",
+    "npsLow": "Not likely",
+    "npsHigh": "Very likely",
+    "choose": "Choose…"
   }
 }

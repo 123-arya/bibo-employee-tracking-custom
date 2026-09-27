@@ -10,6 +10,10 @@ import { Employees } from "./pages/Employees";
 import { SignIn } from "./auth/SignIn";
 import { SignupWizard } from "./auth/SignupWizard";
 import { Settings } from "./pages/Settings";
+import { SuperAdminRoute } from "./components/SuperAdminRoute";
+import { MessagesAdmin } from "./pages/internal/MessagesAdmin";
+import { MessageEditor } from "./pages/internal/MessageEditor";
+import { MessageStats } from "./pages/internal/MessageStats";
 
 export default function App() {
   return (
@@ -31,6 +35,12 @@ export default function App() {
                 <Route path="employees" element={<Employees />} />
                 <Route path="employees/:id" element={<EmployeeDetail />} />
                 <Route path="settings" element={<Settings />} />
+                <Route element={<SuperAdminRoute />}>
+                  <Route path="internal/messages" element={<MessagesAdmin />} />
+                  <Route path="internal/messages/new" element={<MessageEditor />} />
+                  <Route path="internal/messages/:id" element={<MessageStats />} />
+                  <Route path="internal/messages/:id/edit" element={<MessageEditor />} />
+                </Route>
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

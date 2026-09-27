@@ -18,6 +18,7 @@ import { Login, type Session } from "./screens/Login";
 import { Welcome } from "./screens/Welcome";
 import { Onboarding } from "./screens/Onboarding";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
+import { MessageCenter } from "./messages/MessageCenter";
 import { AppTrayMenu } from "./components/AppTrayMenu";
 
 type Screen =
@@ -512,6 +513,7 @@ function App() {
         </main>
       </div>
       </div>
+      <MessageCenter user={session && !settings.local_only ? session.email : null} version={version} />
     </div>
   );
 }

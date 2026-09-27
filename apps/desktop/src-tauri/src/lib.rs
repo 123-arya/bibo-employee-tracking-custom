@@ -13,7 +13,7 @@ mod tray;
 mod trackers;
 
 use std::sync::Arc;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 /// Current unix time in seconds. Shared helper for sync bookkeeping.
 pub fn now_unix() -> i64 {
@@ -104,6 +104,9 @@ pub fn run() {
             commands::apply_org_policy,
             commands::capture_policy,
             commands::privacy_apps,
+            commands::messages_fetch,
+            commands::message_respond,
+            commands::message_event,
         ])
         .setup(|app| {
             // Open the local SQLite DB under the app data dir.
@@ -156,6 +159,10 @@ pub fn run() {
                         let _ = w.hide();
                     }
                     tauri::WindowEvent::Focused(true) => {
+                        // Tell the UI the window came to the front (launch, Dock/tray
+                        // "Open", app switch) — the DOM focus event doesn't fire here.
+                        // Used by the in-app message popup (ticket 145).
+                        let _ = w.emit("app-focused", ());
                         use std::sync::atomic::Ordering;
                         let now = now_unix();
                         if now - last_active.load(Ordering::Relaxed) >= 30 {

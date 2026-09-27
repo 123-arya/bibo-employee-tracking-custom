@@ -276,6 +276,86 @@ impl BackendClient {
         Err("fetch_policy: unreachable retry exhaustion".into())
     }
 
+    /// `GET /v1/messages` (auto-refresh on 401) — in-app messages this user is
+    /// eligible for, already resolved to `locale`. Passed through to the UI as JSON.
+    pub async fn fetch_messages(
+        &self,
+        platform: &str,
+        version: &str,
+        locale: &str,
+    ) -> Result<serde_json::Value, String> {
+        let mut token = self.access_token()?;
+        for attempt in 0..2 {
+            let resp = self
+                .http
+                .get(self.url("/v1/messages"))
+                .query(&[("platform", platform), ("version", version), ("locale", locale)])
+                .bearer_auth(&token)
+                .send()
+                .await
+                .map_err(net_err)?;
+            if resp.status() == reqwest::StatusCode::UNAUTHORIZED && attempt == 0 {
+                token = self.refresh().await?;
+                continue;
+            }
+            if !resp.status().is_success() {
+                return Err(status_err(resp).await);
+            }
+            return resp.json().await.map_err(|e| e.to_string());
+        }
+        Err("fetch_messages: unreachable retry exhaustion".into())
+    }
+
+    /// `POST /v1/messages/{id}/response` (auto-refresh on 401) — a survey answer.
+    pub async fn respond_message(&self, id: &str, body: &serde_json::Value) -> Result<(), String> {
+        let path = format!("/v1/messages/{id}/response");
+        let mut token = self.access_token()?;
+        for attempt in 0..2 {
+            let resp = self
+                .http
+                .post(self.url(&path))
+                .bearer_auth(&token)
+                .json(body)
+                .send()
+                .await
+                .map_err(net_err)?;
+            if resp.status() == reqwest::StatusCode::UNAUTHORIZED && attempt == 0 {
+                token = self.refresh().await?;
+                continue;
+            }
+            if !resp.status().is_success() {
+                return Err(status_err(resp).await);
+            }
+            return Ok(());
+        }
+        Err("respond_message: unreachable retry exhaustion".into())
+    }
+
+    /// `POST /v1/messages/{id}/events` (auto-refresh on 401) — popup analytics.
+    pub async fn message_event(&self, id: &str, body: &serde_json::Value) -> Result<(), String> {
+        let path = format!("/v1/messages/{id}/events");
+        let mut token = self.access_token()?;
+        for attempt in 0..2 {
+            let resp = self
+                .http
+                .post(self.url(&path))
+                .bearer_auth(&token)
+                .json(body)
+                .send()
+                .await
+                .map_err(net_err)?;
+            if resp.status() == reqwest::StatusCode::UNAUTHORIZED && attempt == 0 {
+                token = self.refresh().await?;
+                continue;
+            }
+            if !resp.status().is_success() {
+                return Err(status_err(resp).await);
+            }
+            return Ok(());
+        }
+        Err("message_event: unreachable retry exhaustion".into())
+    }
+
     /// Current access token, or an error if logged out.
     fn access_token(&self) -> Result<String, String> {
         self.auth
