@@ -40,7 +40,7 @@ func New(cfg *config.Config, st *store.Store, files *filestore.Store, ret *reten
 	r.GET("/healthz", handlers.Health)
 
 	tok := auth.NewManager(cfg.JWTSecret)
-	authH := handlers.NewAuthHandler(st, tok)
+	authH := handlers.NewAuthHandler(st, tok, cfg.SuperAdmins)
 	ownerH := handlers.NewOwnerHandler(st)
 	syncH := handlers.NewSyncHandler(st)
 	shotH := handlers.NewScreenshotHandler(st, files)
@@ -48,6 +48,8 @@ func New(cfg *config.Config, st *store.Store, files *filestore.Store, ret *reten
 	retentionH := handlers.NewRetentionHandler(st, ret)
 	downloadsH := handlers.NewDownloadsHandler(st, cfg.StaticDir)
 	keepaliveH := handlers.NewKeepaliveHandler(cfg.KeepaliveToken)
+	messagesH := handlers.NewMessagesHandler(st, cfg.JWTSecret)
+	adminMsgH := handlers.NewAdminMessagesHandler(st)
 
 	// Counted installer downloads (production, when static content is served). Takes
 	// precedence over the static NoRoute fallback below.
@@ -92,6 +94,20 @@ func New(cfg *config.Config, st *store.Store, files *filestore.Store, ret *reten
 
 	// Capture policy for the desktop (employee's org settings).
 	authed.GET("/policy", ownerH.Policy)
+
+	// In-app messages for the desktop (announcements, surveys, promos).
+	authed.GET("/messages", messagesH.List)
+	authed.POST("/messages/:id/response", messagesH.Respond)
+	authed.POST("/messages/:id/events", messagesH.Event)
+
+	// Super-admin area (SUPER_ADMINS): manage in-app messages + their analytics.
+	admin := authed.Group("/admin", handlers.SuperAdmin(st, cfg.SuperAdmins))
+	admin.GET("/messages", adminMsgH.List)
+	admin.POST("/messages", adminMsgH.Create)
+	admin.GET("/messages/:id", adminMsgH.Get)
+	admin.PUT("/messages/:id", adminMsgH.Update)
+	admin.DELETE("/messages/:id", adminMsgH.Delete)
+	admin.GET("/messages/:id/stats", adminMsgH.Stats)
 
 	// Sync ingest (desktop → backend, one-directional).
 	authed.POST("/sync/batch", syncH.Batch)

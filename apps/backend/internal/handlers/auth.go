@@ -14,13 +14,14 @@ import (
 
 // AuthHandler serves registration, login, refresh, and the public picker.
 type AuthHandler struct {
-	store *store.Store
-	tok   *auth.Manager
+	store  *store.Store
+	tok    *auth.Manager
+	admins []string // SUPER_ADMINS, surfaced as is_super_admin on the user
 }
 
 // NewAuthHandler wires the auth handler.
-func NewAuthHandler(s *store.Store, tok *auth.Manager) *AuthHandler {
-	return &AuthHandler{store: s, tok: tok}
+func NewAuthHandler(s *store.Store, tok *auth.Manager, admins []string) *AuthHandler {
+	return &AuthHandler{store: s, tok: tok, admins: admins}
 }
 
 type registerReq struct {
@@ -176,11 +177,12 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"id":           u.ID,
-		"email":        u.Email,
-		"username":     u.Username,
-		"display_name": u.DisplayName,
-		"account_type": u.AccountType,
+		"id":             u.ID,
+		"email":          u.Email,
+		"username":       u.Username,
+		"display_name":   u.DisplayName,
+		"account_type":   u.AccountType,
+		"is_super_admin": isSuperAdmin(u, h.admins),
 	})
 }
 
@@ -192,11 +194,12 @@ func (h *AuthHandler) issue(c *gin.Context, status int, u store.User) {
 	}
 	c.JSON(status, gin.H{
 		"user": gin.H{
-			"id":           u.ID,
-			"email":        u.Email,
-			"username":     u.Username,
-			"display_name": u.DisplayName,
-			"account_type": u.AccountType,
+			"id":             u.ID,
+			"email":          u.Email,
+			"username":       u.Username,
+			"display_name":   u.DisplayName,
+			"account_type":   u.AccountType,
+			"is_super_admin": isSuperAdmin(u, h.admins),
 		},
 		"tokens": pair,
 	})
