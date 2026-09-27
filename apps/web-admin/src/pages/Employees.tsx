@@ -100,17 +100,17 @@ export function Employees() {
   const hasBusiness = businesses.length > 0;
 
   return (
-    <div className="ad-wrap" style={{ paddingBottom: 32 }}>
-      <div className="ad-pagehead">
-        <div className="ad-pagehead__main">
-          <h1 className="ad-h1">{terms.many}</h1>
+    <div className="admin-wrap" style={{ paddingBottom: 32 }}>
+      <div className="admin-pagehead">
+        <div className="admin-pagehead__main">
+          <h1 className="admin-h1">{terms.many}</h1>
           {selected && (
-            <p className="ad-sub">
+            <p className="admin-sub">
               {selected.name} · {employees.length} {terms.many}
             </p>
           )}
         </div>
-        <div className="ad-pagehead__actions">
+        <div className="admin-pagehead__actions">
           <button className="bibo-btn bibo-btn--secondary" onClick={() => setShowBiz(true)}>
             <span style={{ display: "inline-flex", lineHeight: 0 }}>{IconPlus}</span>
             <span>{t("employees.newOrg", { org: terms.org })}</span>
@@ -151,8 +151,8 @@ export function Employees() {
       )}
 
       {employees.length > 0 && (
-        <div className="bibo-card bibo-card--default ad-tablecard">
-          <table className="ad-table ad-table--roster">
+        <div className="bibo-card bibo-card--default admin-tablecard">
+          <table className="admin-table admin-table--roster">
             <thead>
               <tr>
                 <th>{t("employees.table.name")}</th>
@@ -168,22 +168,22 @@ export function Employees() {
                 return (
                   <tr key={e.id}>
                     <td>
-                      <div className="ad-name">
+                      <div className="admin-name">
                         <span className="bibo-avatar" style={{ ["--_s" as string]: "34px" }}>
                           <span className="bibo-avatar__img" aria-label={e.display_name} style={{ background: pal.bg, color: pal.fg }}>
                             {initials(e.display_name)}
                           </span>
                           {status && <span className={`bibo-avatar__dot bibo-avatar__dot--${status}`} />}
                         </span>
-                        <span className="ad-name__txt">
+                        <span className="admin-name__txt">
                           {e.display_name}
-                          {isSelf && <span className="ad-self">{t("dashboard.selfBadge")}</span>}
+                          {isSelf && <span className="admin-self">{t("dashboard.selfBadge")}</span>}
                         </span>
                       </div>
                     </td>
-                    <td className="ad-login">{e.email || e.username}</td>
+                    <td className="admin-login">{e.email || e.username}</td>
                     <td className="r">
-                      <Link className="ad-viewlink" to={`/employees/${e.id}?business=${selectedId}`}>
+                      <Link className="admin-viewlink" to={`/employees/${e.id}?business=${selectedId}`}>
                         {t("employees.viewReports")}
                         {IconArrowRight}
                       </Link>

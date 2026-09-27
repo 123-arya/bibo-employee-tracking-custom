@@ -35,11 +35,11 @@ export function MessagesAdmin() {
   }
 
   return (
-    <div className="ad-wrap" style={{ paddingBottom: 32 }}>
-      <div className="ad-pagehead">
-        <div className="ad-pagehead__main">
-          <h1 className="ad-h1">{t("internal.title")}</h1>
-          <p className="ad-sub">{t("internal.sub")}</p>
+    <div className="admin-wrap" style={{ paddingBottom: 32 }}>
+      <div className="admin-pagehead">
+        <div className="admin-pagehead__main">
+          <h1 className="admin-h1">{t("internal.title")}</h1>
+          <p className="admin-sub">{t("internal.sub")}</p>
         </div>
         <button type="button" className="bibo-btn bibo-btn--primary" onClick={() => navigate("/internal/messages/new")}>
           {t("internal.new")}
@@ -51,8 +51,8 @@ export function MessagesAdmin() {
       {rows && rows.length === 0 && <Empty>{t("internal.empty")}</Empty>}
 
       {rows && rows.length > 0 && (
-        <div className="bibo-card bibo-card--default ad-tablecard">
-          <table className="ad-table">
+        <div className="bibo-card bibo-card--default admin-tablecard">
+          <table className="admin-table">
             <thead>
               <tr>
                 <th>{t("internal.col.message")}</th>
@@ -93,7 +93,7 @@ export function MessagesAdmin() {
                       <button type="button" className={`im-toggle${m.active ? "" : " im-toggle--on"}`} onClick={() => toggle(m)}>
                         {m.active ? t("internal.pause") : t("internal.activate")}
                       </button>
-                      <Link className="ad-viewlink" to={`/internal/messages/${m.id}/edit`}>{t("internal.edit")}</Link>
+                      <Link className="admin-viewlink" to={`/internal/messages/${m.id}/edit`}>{t("internal.edit")}</Link>
                     </td>
                   </tr>
                 );
@@ -106,8 +106,8 @@ export function MessagesAdmin() {
       {whatsNew.length > 0 && (
         <>
           <h2 className="im-h2">{t("internal.whatsNew")}</h2>
-          <div className="bibo-card bibo-card--default ad-tablecard">
-            <table className="ad-table">
+          <div className="bibo-card bibo-card--default admin-tablecard">
+            <table className="admin-table">
               <thead>
                 <tr>
                   <th>{t("internal.col.version")}</th>

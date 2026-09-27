@@ -93,7 +93,7 @@ function StatCard(props: {
 }) {
   const { icon, label, value, focal, delta, sub } = props;
   return (
-    <div className={`bibo-card ${focal ? "bibo-card--focal" : "bibo-card--default"} ad-cardpad`}>
+    <div className={`bibo-card ${focal ? "bibo-card--focal" : "bibo-card--default"} admin-cardpad`}>
       <div className={`bibo-stat${focal ? " bibo-stat--focal" : ""}`}>
         <div className="bibo-stat__top">
           <div className="bibo-stat__icon">{icon}</div>
@@ -153,12 +153,12 @@ export function Dashboard() {
   const screenshotsYday = rows.reduce((s, e) => s + (e.screenshots_yesterday || 0), 0);
 
   return (
-    <div className="ad-wrap" style={{ paddingBottom: 32 }}>
-      <div className="ad-pagehead">
-        <div className="ad-pagehead__main">
-          <h1 className="ad-h1">{t("dashboard.title")}</h1>
+    <div className="admin-wrap" style={{ paddingBottom: 32 }}>
+      <div className="admin-pagehead">
+        <div className="admin-pagehead__main">
+          <h1 className="admin-h1">{t("dashboard.title")}</h1>
           {selected && (
-            <p className="ad-sub">
+            <p className="admin-sub">
               {selected.name} · {rows.length} {terms.many}
             </p>
           )}
@@ -187,7 +187,7 @@ export function Dashboard() {
 
       {rows.length > 0 && (
         <>
-          <div className="ad-stats">
+          <div className="admin-stats">
             <StatCard
               focal
               icon={IconClock}
@@ -217,8 +217,8 @@ export function Dashboard() {
             />
           </div>
 
-          <div className="bibo-card bibo-card--default ad-tablecard">
-            <table className="ad-table">
+          <div className="bibo-card bibo-card--default admin-tablecard">
+            <table className="admin-table">
               <thead>
                 <tr>
                   <th>{t("dashboard.table.name")}</th>
@@ -239,31 +239,31 @@ export function Dashboard() {
                   return (
                     <tr key={e.id}>
                       <td>
-                        <div className="ad-name">
+                        <div className="admin-name">
                           <span className="bibo-avatar" style={{ ["--_s" as string]: "34px" }}>
                             <span className="bibo-avatar__img" aria-label={e.display_name} style={{ background: pal.bg, color: pal.fg }}>
                               {initials(e.display_name)}
                             </span>
                             <span className={`bibo-avatar__dot bibo-avatar__dot--${status}`} />
                           </span>
-                          <span className="ad-name__txt">
+                          <span className="admin-name__txt">
                             {e.display_name}
-                            {isSelf && <span className="ad-self">{t("dashboard.selfBadge")}</span>}
+                            {isSelf && <span className="admin-self">{t("dashboard.selfBadge")}</span>}
                           </span>
                         </div>
                       </td>
-                      <td className="ad-login">{e.email || e.username}</td>
-                      <td className="ad-relt">{fmtRelative(e.last_seen)}</td>
-                      <td className="r ad-dur">{fmtClock(e.active_today_s)}</td>
+                      <td className="admin-login">{e.email || e.username}</td>
+                      <td className="admin-relt">{fmtRelative(e.last_seen)}</td>
+                      <td className="r admin-dur">{fmtClock(e.active_today_s)}</td>
                       <td className="r">
-                        <span className="ad-rowprod">
-                          <span className="ad-rowprod__pct" style={{ color: col }}>{focus == null ? "—" : `${focus}%`}</span>
+                        <span className="admin-rowprod">
+                          <span className="admin-rowprod__pct" style={{ color: col }}>{focus == null ? "—" : `${focus}%`}</span>
                         </span>
                       </td>
                       <td className="r">
                         <button
                           type="button"
-                          className="ad-viewlink"
+                          className="admin-viewlink"
                           onClick={() => navigate(`/employees/${e.id}?business=${selectedId}`)}
                         >
                           {t("dashboard.view")}

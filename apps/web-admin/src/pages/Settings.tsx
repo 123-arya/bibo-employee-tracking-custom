@@ -220,12 +220,12 @@ export function Settings() {
   }
 
   return (
-    <div className="ad-wrap" style={{ paddingBottom: 32 }}>
-      <div className="ad-pagehead">
-        <div className="ad-pagehead__main">
-          <h1 className="ad-h1">{t("title")}</h1>
+    <div className="admin-wrap" style={{ paddingBottom: 32 }}>
+      <div className="admin-pagehead">
+        <div className="admin-pagehead__main">
+          <h1 className="admin-h1">{t("title")}</h1>
           {selected && (
-            <p className="ad-sub">
+            <p className="admin-sub">
               <Trans
                 t={t}
                 i18nKey="scope"
@@ -243,7 +243,7 @@ export function Settings() {
 
       {selected && (
         <>
-          <div className="ad-set-sec">{t("sections.capture")}</div>
+          <div className="admin-set-sec">{t("sections.capture")}</div>
           <div className="set-group">
             <div className="set-row">
               <div>
@@ -364,7 +364,7 @@ export function Settings() {
             </div>
           </div>
 
-          <div className="ad-set-sec">{t("sections.storage")}</div>
+          <div className="admin-set-sec">{t("sections.storage")}</div>
           <div className="set-group">
             <div className="set-row">
               <div>
@@ -540,15 +540,15 @@ export function Settings() {
         </Modal>
       )}
 
-      <div className="ad-set-sec">{t("sections.account")}</div>
+      <div className="admin-set-sec">{t("sections.account")}</div>
       <div className="set-group">
         <div className="set-row">
           <div className="set-title">{t("account.email")}</div>
-          <div className="ad-readonly">{user?.email || user?.username}</div>
+          <div className="admin-readonly">{user?.email || user?.username}</div>
         </div>
         <div className="set-row">
           <div className="set-title">{t("account.displayName")}</div>
-          <div className="ad-readonly">{user?.display_name || user?.username}</div>
+          <div className="admin-readonly">{user?.display_name || user?.username}</div>
         </div>
       </div>
     </div>

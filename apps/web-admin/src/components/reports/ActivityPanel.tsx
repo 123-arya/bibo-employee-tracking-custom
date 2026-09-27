@@ -115,23 +115,23 @@ export function ActivityPanel({ data }: { data: ActivityResponse }) {
   });
 
   return (
-    <div className="ad-twocol">
+    <div className="admin-twocol">
       {/* Today's timeline */}
-      <div className="bibo-card bibo-card--default ad-cardpad">
-        <div className="ad-panelhead">
-          <div className="ad-paneltitle">{t("activity.timeline")}</div>
+      <div className="bibo-card bibo-card--default admin-cardpad">
+        <div className="admin-panelhead">
+          <div className="admin-paneltitle">{t("activity.timeline")}</div>
         </div>
         {hasTimeline ? (
           <>
-            <div className="ad-tlbox">
-              <div className="ad-timeline">
+            <div className="admin-tlbox">
+              <div className="admin-timeline">
                 {segs.map((s, i) => {
                   const center = Math.min(96, Math.max(4, s.left + s.width / 2));
                   if (s.kind === "app") {
                     return (
                       <div
                         key={i}
-                        className="ad-tlseg"
+                        className="admin-tlseg"
                         onMouseEnter={() => setTip({ label: `${s.app} · ${fmtHM(s.dur)}`, left: center })}
                         onMouseLeave={() => setTip(null)}
                         style={{
@@ -147,23 +147,23 @@ export function ActivityPanel({ data }: { data: ActivityResponse }) {
                     return (
                       <div
                         key={i}
-                        className="ad-tlseg idle"
+                        className="admin-tlseg idle"
                         onMouseEnter={() => setTip({ label: `${t("activity.idle")} · ${fmtHM(s.dur)}`, left: center })}
                         onMouseLeave={() => setTip(null)}
                         style={{ left: `${s.left}%`, width: `${s.width}%` }}
                       />
                     );
                   }
-                  return <div key={i} className="ad-tlseg end" style={{ left: `${s.left}%`, width: `${s.width}%` }} />;
+                  return <div key={i} className="admin-tlseg end" style={{ left: `${s.left}%`, width: `${s.width}%` }} />;
                 })}
               </div>
               {tip && (
-                <div className="ad-tltip" style={{ left: `${tip.left}%` }}>
+                <div className="admin-tltip" style={{ left: `${tip.left}%` }}>
                   {tip.label}
                 </div>
               )}
             </div>
-            <div className="ad-tlaxis">
+            <div className="admin-tlaxis">
               {ticks.map((h) => (
                 <span key={h}>{hourLabel(h)}</span>
               ))}
@@ -175,9 +175,9 @@ export function ActivityPanel({ data }: { data: ActivityResponse }) {
       </div>
 
       {/* App & window breakdown */}
-      <div className="bibo-card bibo-card--default ad-cardpad">
-        <div className="ad-panelhead">
-          <div className="ad-paneltitle">{t("activity.breakdown")}</div>
+      <div className="bibo-card bibo-card--default admin-cardpad">
+        <div className="admin-panelhead">
+          <div className="admin-paneltitle">{t("activity.breakdown")}</div>
         </div>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
           <div className="bibo-donut" style={{ position: "relative", width: 130, height: 130 }}>
@@ -224,22 +224,22 @@ export function ActivityPanel({ data }: { data: ActivityResponse }) {
             </div>
           </div>
         </div>
-        <div className="ad-appbars">
+        <div className="admin-appbars">
           {breakdown.map((b, i) => (
-            <div className="ad-appbar" key={b.app_name}>
-              <div className="ad-appbar__name">
+            <div className="admin-appbar" key={b.app_name}>
+              <div className="admin-appbar__name">
                 <span className="dot" style={{ background: colorAt(i) }} />
                 <span className="txt" title={b.app_name}>
                   {b.app_name}
                 </span>
               </div>
-              <div className="ad-appbar__track">
+              <div className="admin-appbar__track">
                 <div
-                  className="ad-appbar__fill"
+                  className="admin-appbar__fill"
                   style={{ width: `${(b.duration_s / max) * 100}%`, background: barFill(colorAt(i)) }}
                 />
               </div>
-              <div className="ad-appbar__val">{fmtHM(b.duration_s)}</div>
+              <div className="admin-appbar__val">{fmtHM(b.duration_s)}</div>
             </div>
           ))}
         </div>

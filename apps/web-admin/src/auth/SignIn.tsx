@@ -12,7 +12,7 @@ const DOWNLOAD_URL = import.meta.env.VITE_DOWNLOAD_URL || "/";
 /** Brand mark shown inside the card — pulse/activity glyph on a violet gradient tile. */
 function LogoMark() {
   return (
-    <span className="ad-login__logo" aria-hidden>
+    <span className="admin-login__logo" aria-hidden>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="BiBoTracking">
         <defs>
           <linearGradient id="biboLogoGrad" x1="6" y1="4" x2="42" y2="46" gradientUnits="userSpaceOnUse">
@@ -97,10 +97,10 @@ export function SignIn() {
 
   return (
     <AuthLayout bare hideLockup>
-      <div className="ad-loginbox">
+      <div className="admin-loginbox">
         <LogoMark />
-        <h1 className="ad-login__title">{t("signIn.title")}</h1>
-        <p className="ad-login__sub">{t("signIn.subtitle")}</p>
+        <h1 className="admin-login__title">{t("signIn.title")}</h1>
+        <p className="admin-login__sub">{t("signIn.subtitle")}</p>
 
         {error && (
           <div style={{ marginBottom: 16 }}>
@@ -108,7 +108,7 @@ export function SignIn() {
           </div>
         )}
 
-        <form className="ad-form" onSubmit={submit}>
+        <form className="admin-form" onSubmit={submit}>
           <label className="bibo-field">
             <span className="bibo-field__lbl">{t("signIn.identifier")}</span>
             <span className="bibo-input">
@@ -148,14 +148,14 @@ export function SignIn() {
           </button>
         </form>
 
-        <div className="ad-login__links">
-          <span className="ad-muted">
+        <div className="admin-login__links">
+          <span className="admin-muted">
             {t("signIn.newHere")}{" "}
-            <Link className="ad-link" to="/signup">
+            <Link className="admin-link" to="/signup">
               {t("signIn.createAccount")}
             </Link>
           </span>
-          <a className="ad-link" href={DOWNLOAD_URL}>
+          <a className="admin-link" href={DOWNLOAD_URL}>
             {t("signIn.download")}
           </a>
         </div>

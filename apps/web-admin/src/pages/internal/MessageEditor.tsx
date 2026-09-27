@@ -64,7 +64,7 @@ export function MessageEditor() {
       .catch((e) => setError(String(e.message ?? e)));
   }, [editId]);
 
-  if (!m) return <div className="ad-wrap">{error ? <Notice kind="danger">{error}</Notice> : <Spinner />}</div>;
+  if (!m) return <div className="admin-wrap">{error ? <Notice kind="danger">{error}</Notice> : <Spinner />}</div>;
 
   const set = (patch: Partial<MessageDef>) => setM({ ...m, ...patch });
   // A survey with answers can be reworded/translated, not restructured (backend enforces).
@@ -120,11 +120,11 @@ export function MessageEditor() {
   );
 
   return (
-    <div className="ad-wrap" style={{ paddingBottom: 32 }}>
-      <div className="ad-pagehead">
-        <div className="ad-pagehead__main">
-          <h1 className="ad-h1">{isNew ? t("internal.form.newTitle") : t("internal.form.editTitle")}</h1>
-          {!isNew && <p className="ad-sub">{m.id}</p>}
+    <div className="admin-wrap" style={{ paddingBottom: 32 }}>
+      <div className="admin-pagehead">
+        <div className="admin-pagehead__main">
+          <h1 className="admin-h1">{isNew ? t("internal.form.newTitle") : t("internal.form.editTitle")}</h1>
+          {!isNew && <p className="admin-sub">{m.id}</p>}
         </div>
         <div className="im-actions">
           <button type="button" className="bibo-btn bibo-btn--ghost" onClick={() => navigate(isNew ? "/internal/messages" : `/internal/messages/${m.id}`)}>
@@ -327,9 +327,9 @@ function Preview({ m, lang }: { m: MessageDef; lang: string }) {
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
-    <div className="bibo-card bibo-card--default ad-cardpad im-section">
-      <div className="ad-paneltitle">{title}</div>
-      {hint && <div className="ad-muted im-hint">{hint}</div>}
+    <div className="bibo-card bibo-card--default admin-cardpad im-section">
+      <div className="admin-paneltitle">{title}</div>
+      {hint && <div className="admin-muted im-hint">{hint}</div>}
       {children}
     </div>
   );
@@ -353,7 +353,7 @@ function Input({
       <span className="bibo-field__lbl">{label}</span>
       <input className="im-inp" type={type} value={value} disabled={disabled} placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)} />
-      {hint && <span className="ad-muted im-hint">{hint}</span>}
+      {hint && <span className="admin-muted im-hint">{hint}</span>}
     </label>
   );
 }

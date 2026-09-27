@@ -218,3 +218,4 @@ packaged for the Web Store, and three production releases (1.2.0 → 1.3.0 → 1
 144. Alerts: `bibomon watch` on Oracle — bibotracking 4xx/5xx over threshold → Telegram — **Done**
 145. In-app messages (What's new + announcements / surveys / promos) with a super-admin Messages area in web-admin: editor, analytics, survey results — **Implemented (not deployed)**
 146. Security: remove unauthenticated `/v1/public/businesses` (leaked all business + owner names) — **Done (deploy pending)**
+147. Web admin: rename `ad-*` CSS classes to `admin-*` — ad blockers (EasyList) hid sidebar/panels/tables — **Done (deploy pending)**

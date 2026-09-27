@@ -54,14 +54,14 @@ function Shot({ meta, onOpen }: { meta: ShotMeta; onOpen: () => void }) {
   }, [meta.client_uuid]);
 
   return (
-    <div className={`ad-shot${url ? " ad-shot--clickable" : ""}`} onClick={url ? onOpen : undefined}>
+    <div className={`admin-shot${url ? " admin-shot--clickable" : ""}`} onClick={url ? onOpen : undefined}>
       <div
-        className="ad-shot__img"
+        className="admin-shot__img"
         style={url ? { backgroundImage: `url("${url}")` } : { background: gradientFor(meta.app) }}
       />
-      <div className="ad-shot__veil" />
-      {meta.app && <span className="ad-shot__app">{meta.app}</span>}
-      <span className="ad-shot__t">{hhmmss(meta.ts)}</span>
+      <div className="admin-shot__veil" />
+      {meta.app && <span className="admin-shot__app">{meta.app}</span>}
+      <span className="admin-shot__t">{hhmmss(meta.ts)}</span>
     </div>
   );
 }
@@ -135,14 +135,14 @@ function Lightbox({
   }, [index, hasPrev, hasNext, onIndex, onClose]);
 
   return createPortal(
-    <div className="ad-lightbox" onClick={onClose}>
-      <button type="button" className="ad-lightbox__btn ad-lightbox__close" aria-label={t("screenshots.close")} onClick={onClose}>
+    <div className="admin-lightbox" onClick={onClose}>
+      <button type="button" className="admin-lightbox__btn admin-lightbox__close" aria-label={t("screenshots.close")} onClick={onClose}>
         {IconX}
       </button>
       {hasPrev && (
         <button
           type="button"
-          className="ad-lightbox__btn ad-lightbox__nav ad-lightbox__nav--prev"
+          className="admin-lightbox__btn admin-lightbox__nav admin-lightbox__nav--prev"
           aria-label={t("screenshots.prev")}
           onClick={(e) => {
             e.stopPropagation();
@@ -155,7 +155,7 @@ function Lightbox({
       {hasNext && (
         <button
           type="button"
-          className="ad-lightbox__btn ad-lightbox__nav ad-lightbox__nav--next"
+          className="admin-lightbox__btn admin-lightbox__nav admin-lightbox__nav--next"
           aria-label={t("screenshots.next")}
           onClick={(e) => {
             e.stopPropagation();
@@ -165,17 +165,17 @@ function Lightbox({
           {IconChevronRight}
         </button>
       )}
-      <figure className="ad-lightbox__body" onClick={(e) => e.stopPropagation()}>
+      <figure className="admin-lightbox__body" onClick={(e) => e.stopPropagation()}>
         {url ? (
           <img
-            className="ad-lightbox__img"
+            className="admin-lightbox__img"
             src={url}
             alt={t("screenshots.alt", { time: fmtTime(meta.ts) })}
           />
         ) : (
           <Spinner label={t("screenshots.loading")} />
         )}
-        <figcaption className="ad-lightbox__caption num">
+        <figcaption className="admin-lightbox__caption num">
           {index + 1} / {shots.length} · {fmtTime(meta.ts)} · {meta.width}×{meta.height} ·{" "}
           {t("screenshots.display", { id: meta.display_id })} · {fmtBytes(meta.byte_size)}
         </figcaption>
@@ -202,16 +202,16 @@ export function ScreenshotGallery({
 
   return (
     <>
-      <div className="ad-panelhead">
-        <div className="ad-paneltitle">{t("screenshots.title")}</div>
+      <div className="admin-panelhead">
+        <div className="admin-paneltitle">{t("screenshots.title")}</div>
       </div>
-      <div className="ad-gallery">
+      <div className="admin-gallery">
         {shots.map((s, i) => (
           <Shot key={s.client_uuid} meta={s as ShotMeta} onOpen={() => setActive(i)} />
         ))}
       </div>
       {onLoadMore && (
-        <div className="ad-gallery__more">
+        <div className="admin-gallery__more">
           <button type="button" className="bibo-btn bibo-btn--secondary" onClick={onLoadMore} disabled={loadingMore}>
             {loadingMore ? t("screenshots.loading") : t("screenshots.loadMore")}
           </button>

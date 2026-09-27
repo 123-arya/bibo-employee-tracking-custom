@@ -39,11 +39,11 @@ export function BrowserPanel({ visits }: { visits: BrowserVisit[] }) {
   const rows = [...visits].sort((a, b) => b.duration_s - a.duration_s);
 
   return (
-    <div className="bibo-card bibo-card--default ad-tablecard">
-      <div className="ad-panelhead" style={{ padding: "24px 20px 4px" }}>
-        <div className="ad-paneltitle">{t("browser.title")}</div>
+    <div className="bibo-card bibo-card--default admin-tablecard">
+      <div className="admin-panelhead" style={{ padding: "24px 20px 4px" }}>
+        <div className="admin-paneltitle">{t("browser.title")}</div>
       </div>
-      <table className="ad-table">
+      <table className="admin-table">
         <thead>
           <tr>
             <th>{t("browser.table.domain")}</th>
@@ -58,7 +58,7 @@ export function BrowserPanel({ visits }: { visits: BrowserVisit[] }) {
             return (
               <tr key={`${v.ts}-${i}`}>
                 <td>
-                  <div className="ad-name">
+                  <div className="admin-name">
                     <span
                       style={{
                         width: 20,
@@ -76,14 +76,14 @@ export function BrowserPanel({ visits }: { visits: BrowserVisit[] }) {
                     >
                       {domain.charAt(0).toUpperCase()}
                     </span>
-                    <span className="ad-name__txt" title={v.page_title || v.url}>
+                    <span className="admin-name__txt" title={v.page_title || v.url}>
                       {domain}
                     </span>
                   </div>
                 </td>
-                <td className="ad-relt">{hhmm(v.ts)}</td>
-                <td className="r ad-dur">{fmtDuration(v.duration_s)}</td>
-                <td className="ad-muted" style={{ fontWeight: 600 }}>
+                <td className="admin-relt">{hhmm(v.ts)}</td>
+                <td className="r admin-dur">{fmtDuration(v.duration_s)}</td>
+                <td className="admin-muted" style={{ fontWeight: 600 }}>
                   {v.browser}
                 </td>
               </tr>

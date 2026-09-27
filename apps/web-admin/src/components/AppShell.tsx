@@ -11,7 +11,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 /** Brand mark — violet gradient tile with the pulse glyph (matches the auth logo). */
 function RailLogo() {
   return (
-    <span className="ad-rail__logo" aria-label="BiBoTracking">
+    <span className="admin-rail__logo" aria-label="BiBoTracking">
       <svg viewBox="0 0 48 48" role="img" aria-label="BiBoTracking">
         <defs>
           <linearGradient id="biboRailGrad" x1="6" y1="4" x2="42" y2="46" gradientUnits="userSpaceOnUse">
@@ -166,51 +166,51 @@ function BizPicker() {
   if (!selected) return null;
 
   return (
-    <div className="ad-bizpick" ref={ref}>
+    <div className="admin-bizpick" ref={ref}>
       <button
         type="button"
-        className="ad-bizpick__btn"
+        className="admin-bizpick__btn"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
-        <span className="ad-bizpick__ic">{initials(selected.name)}</span>
-        <span className="ad-bizpick__name">{selected.name}</span>
+        <span className="admin-bizpick__ic">{initials(selected.name)}</span>
+        <span className="admin-bizpick__name">{selected.name}</span>
         <ChevronsUpDownIcon />
       </button>
       {open && (
-        <div className="ad-menu ad-menu--left" role="menu">
+        <div className="admin-menu admin-menu--left" role="menu">
           {businesses.map((b) => (
             <button
               key={b.id}
               type="button"
               role="menuitemradio"
               aria-checked={b.id === selectedId}
-              className={`ad-menu__opt${b.id === selectedId ? " on" : ""}`}
+              className={`admin-menu__opt${b.id === selectedId ? " on" : ""}`}
               onClick={() => {
                 setSelectedId(b.id);
                 setOpen(false);
               }}
             >
-              <span className="ad-bizpick__ic">{initials(b.name)}</span>
-              <span className="ad-menu__label">{b.name}</span>
+              <span className="admin-bizpick__ic">{initials(b.name)}</span>
+              <span className="admin-menu__label">{b.name}</span>
               {b.id === selectedId && <CheckIcon />}
             </button>
           ))}
-          <div className="ad-menu__sep" />
+          <div className="admin-menu__sep" />
           <button
             type="button"
             role="menuitem"
-            className="ad-menu__opt ad-menu__action"
+            className="admin-menu__opt admin-menu__action"
             onClick={() => {
               setOpen(false);
               navigate("/employees?new=1");
             }}
           >
-            <span className="ad-menu__plus">
+            <span className="admin-menu__plus">
               <PlusIcon />
             </span>
-            <span className="ad-menu__label">{t("dashboard.newTeam")}</span>
+            <span className="admin-menu__label">{t("dashboard.newTeam")}</span>
           </button>
         </div>
       )}
@@ -228,10 +228,10 @@ function AccountMenu() {
   const email = user?.email ?? user?.username ?? "";
 
   return (
-    <div className="ad-acct" ref={ref}>
+    <div className="admin-acct" ref={ref}>
       <button
         type="button"
-        className="ad-acct-btn"
+        className="admin-acct-btn"
         aria-label={displayName}
         aria-haspopup="menu"
         aria-expanded={open}
@@ -243,16 +243,16 @@ function AccountMenu() {
         </span>
       </button>
       {open && (
-        <div className="ad-menu ad-menu--right" role="menu" style={{ minWidth: 200 }}>
+        <div className="admin-menu admin-menu--right" role="menu" style={{ minWidth: 200 }}>
           <div style={{ padding: "8px 10px 10px" }}>
             <div style={{ fontSize: "13.5px", fontWeight: 800 }} title={displayName}>
               {displayName}
             </div>
             <div style={{ fontSize: "12px", color: "#9aa1b4", marginTop: 3 }}>{email}</div>
           </div>
-          <div className="ad-menu__sep" />
+          <div className="admin-menu__sep" />
           <button
-            className="ad-menu__opt"
+            className="admin-menu__opt"
             role="menuitem"
             onClick={logout}
             style={{ color: "#f43f5e", fontSize: "15px" }}
@@ -302,25 +302,25 @@ export function AppShell() {
 
   return (
     <div className="app">
-      <aside className="ad-rail">
+      <aside className="admin-rail">
         <RailLogo />
 
-        <nav className="ad-rail__nav">
+        <nav className="admin-rail__nav">
           {NAV.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.end}
               aria-label={n.label}
-              className={({ isActive }) => `ad-railbtn${isActive ? " on" : ""}`}
+              className={({ isActive }) => `admin-railbtn${isActive ? " on" : ""}`}
             >
               {n.icon}
-              <span className="ad-railbtn__tip">{n.label}</span>
+              <span className="admin-railbtn__tip">{n.label}</span>
             </NavLink>
           ))}
         </nav>
 
-        <div className="ad-rail__foot">
+        <div className="admin-rail__foot">
           <span className="bibo-avatar" aria-label={displayName}>
             <span className="bibo-avatar__img">{initials(displayName)}</span>
             <span className="bibo-avatar__dot bibo-avatar__dot--active" />
@@ -329,9 +329,9 @@ export function AppShell() {
       </aside>
 
       <main className="main">
-        <header className="ad-topbar">
-          <div className="ad-topbar__title">{title}</div>
-          <div className="ad-topbar__right">
+        <header className="admin-topbar">
+          <div className="admin-topbar__title">{title}</div>
+          <div className="admin-topbar__right">
             {!isDetail && <BizPicker />}
             <LanguageSwitcher />
             <div className="bibo-seg bibo-seg--sm" role="tablist" aria-label={t("language")}>

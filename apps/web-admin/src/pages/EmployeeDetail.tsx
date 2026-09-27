@@ -65,7 +65,7 @@ function StatCard(props: {
 }) {
   const { icon, label, value, focal, sub } = props;
   return (
-    <div className={`bibo-card ${focal ? "bibo-card--focal" : "bibo-card--default"} ad-cardpad`}>
+    <div className={`bibo-card ${focal ? "bibo-card--focal" : "bibo-card--default"} admin-cardpad`}>
       <div className={`bibo-stat${focal ? " bibo-stat--focal" : ""}`}>
         <div className="bibo-stat__top">
           <div className="bibo-stat__icon">{icon}</div>
@@ -196,18 +196,18 @@ export function EmployeeDetail() {
   );
 
   return (
-    <div className="ad-wrap" style={{ paddingBottom: 32 }}>
+    <div className="admin-wrap" style={{ paddingBottom: 32 }}>
       {/* breadcrumb */}
-      <div className="ad-crumb">
+      <div className="admin-crumb">
         <Link to="/">{t("detail.breadcrumbDashboard")}</Link>
         <span style={{ display: "inline-flex", lineHeight: 0 }}>{IconChevron}</span>
         <span>{terms.many}</span>
         <span style={{ display: "inline-flex", lineHeight: 0 }}>{IconChevron}</span>
-        <span className="ad-crumb__here">{name}</span>
+        <span className="admin-crumb__here">{name}</span>
       </div>
 
       {/* detail header */}
-      <div className="ad-detailhead">
+      <div className="admin-detailhead">
         <span className="bibo-avatar" style={{ ["--_s" as string]: "48px" }}>
           <span
             className="bibo-avatar__img"
@@ -218,17 +218,17 @@ export function EmployeeDetail() {
           </span>
           <span className={`bibo-avatar__dot bibo-avatar__dot--${status}`} />
         </span>
-        <div className="ad-detailhead__id">
-          <div className="ad-detailhead__name">
+        <div className="admin-detailhead__id">
+          <div className="admin-detailhead__name">
             {name}
-            {isSelf && <span className="ad-self">{t("dashboard.selfBadge")}</span>}
+            {isSelf && <span className="admin-self">{t("dashboard.selfBadge")}</span>}
           </div>
           {employee && (
-            <div className="ad-detailhead__login">{employee.email || employee.username}</div>
+            <div className="admin-detailhead__login">{employee.email || employee.username}</div>
           )}
         </div>
 
-        <div className="ad-datemode">
+        <div className="admin-datemode">
           <div className="bibo-seg bibo-seg--sm" role="tablist" aria-label={t("detail.dateMode")}>
             <button
               role="tab"
@@ -249,18 +249,18 @@ export function EmployeeDetail() {
           </div>
 
           {mode === "day" ? (
-            <span className="ad-datefield">
+            <span className="admin-datefield">
               <span style={{ display: "inline-flex", lineHeight: 0 }}>{IconCalendar}</span>
               {dateInput(day, setDay, undefined, today)}
             </span>
           ) : (
             <>
-              <span className="ad-datefield">
-                <span className="ad-datefield__lbl">{t("detail.from")}</span>
+              <span className="admin-datefield">
+                <span className="admin-datefield__lbl">{t("detail.from")}</span>
                 {dateInput(from, setFrom, undefined, to)}
               </span>
-              <span className="ad-datefield">
-                <span className="ad-datefield__lbl">{t("detail.to")}</span>
+              <span className="admin-datefield">
+                <span className="admin-datefield__lbl">{t("detail.to")}</span>
                 {dateInput(to, setTo, from, today)}
               </span>
             </>
@@ -272,7 +272,7 @@ export function EmployeeDetail() {
       {error && <Notice kind="danger">{error}</Notice>}
 
       {/* summary stat cards */}
-      <div className="ad-stats">
+      <div className="admin-stats">
         <StatCard
           focal
           icon={IconClock}
@@ -301,7 +301,7 @@ export function EmployeeDetail() {
       </div>
 
       {/* tabs + panel */}
-      <div className="ad-tabwrap">
+      <div className="admin-tabwrap">
         <div className="bibo-tabs bibo-tabs--pill" role="tablist">
           {TABS.map((key) => (
             <button
@@ -316,7 +316,7 @@ export function EmployeeDetail() {
           ))}
         </div>
 
-        <div className="ad-panel">
+        <div className="admin-panel">
           {loading ? (
             <Spinner label={t("detail.loadingReports")} />
           ) : (
@@ -327,7 +327,7 @@ export function EmployeeDetail() {
                 {/* Browser panel renders its own table card */}
                 {tab === "browser" && (visits ? <BrowserPanel visits={visits} /> : <Spinner />)}
                 {(tab === "keystrokes" || tab === "screenshots") && (
-                  <div className="bibo-card bibo-card--default ad-cardpad">
+                  <div className="bibo-card bibo-card--default admin-cardpad">
                     {tab === "keystrokes" &&
                       (keystrokes ? <KeystrokePanel buckets={keystrokes} /> : <Spinner />)}
                     {tab === "screenshots" &&

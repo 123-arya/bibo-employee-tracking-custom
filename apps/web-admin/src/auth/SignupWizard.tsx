@@ -134,35 +134,35 @@ export function SignupWizard() {
   if (step === "persona") {
     return (
       <AuthLayout bare hideLockup>
-        <div className="ad-wizard">
-          <div className="ad-wiz-rail">
+        <div className="admin-wizard">
+          <div className="admin-wiz-rail">
             {[0, 1, 2, 3, 4].map((i) => (
-              <span key={i} className={`ad-wiz-pip${i === 0 ? " on" : ""}`} />
+              <span key={i} className={`admin-wiz-pip${i === 0 ? " on" : ""}`} />
             ))}
           </div>
-          <div className="ad-wiz-step">{t("stepProgress", { current: 1, total: 5, ns: "ui" })}</div>
+          <div className="admin-wiz-step">{t("stepProgress", { current: 1, total: 5, ns: "ui" })}</div>
 
-          <h2 className="ad-wiz-title">{t("persona.heading")}</h2>
-          <p className="ad-wiz-sub">{t("persona.sub")}</p>
+          <h2 className="admin-wiz-title">{t("persona.heading")}</h2>
+          <p className="admin-wiz-sub">{t("persona.sub")}</p>
 
-          <div className="ad-persona-cards">
+          <div className="admin-persona-cards">
             <button
               type="button"
-              className={`ad-persona${soloOpen ? " ad-persona--open" : ""}`}
+              className={`admin-persona${soloOpen ? " admin-persona--open" : ""}`}
               aria-expanded={soloOpen}
               onClick={() => setSoloOpen((v) => !v)}
             >
-              <span className="ad-persona__ic">
+              <span className="admin-persona__ic">
                 <Ic>
                   <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                   <circle cx="12" cy="7" r="4" />
                 </Ic>
               </span>
-              <span className="ad-persona__body">
-                <span className="ad-persona__t">{t("persona.justMeTitle")}</span>
-                <span className="ad-persona__d">{t("persona.justMeDesc")}</span>
+              <span className="admin-persona__body">
+                <span className="admin-persona__t">{t("persona.justMeTitle")}</span>
+                <span className="admin-persona__d">{t("persona.justMeDesc")}</span>
               </span>
-              <span className="ad-persona__go">
+              <span className="admin-persona__go">
                 <Ic>
                   <path d="M12 15V3" />
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -172,7 +172,7 @@ export function SignupWizard() {
             </button>
 
             {soloOpen && (
-              <div className="ad-notice ad-notice--info">
+              <div className="admin-notice admin-notice--info">
                 <Ic>
                   <circle cx="12" cy="12" r="10" />
                   <path d="M12 16v-4" />
@@ -184,13 +184,13 @@ export function SignupWizard() {
 
             <button
               type="button"
-              className="ad-persona"
+              className="admin-persona"
               onClick={() => {
                 setPersona("manager");
                 setStep("account");
               }}
             >
-              <span className="ad-persona__ic">
+              <span className="admin-persona__ic">
                 <Ic>
                   <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                   <path d="M16 3.128a4 4 0 0 1 0 7.744" />
@@ -198,11 +198,11 @@ export function SignupWizard() {
                   <circle cx="9" cy="7" r="4" />
                 </Ic>
               </span>
-              <span className="ad-persona__body">
-                <span className="ad-persona__t">{t("persona.teamTitle")}</span>
-                <span className="ad-persona__d">{t("persona.teamDesc")}</span>
+              <span className="admin-persona__body">
+                <span className="admin-persona__t">{t("persona.teamTitle")}</span>
+                <span className="admin-persona__d">{t("persona.teamDesc")}</span>
               </span>
-              <span className="ad-persona__go">
+              <span className="admin-persona__go">
                 <Ic>
                   <path d="M5 12h14" />
                   <path d="m12 5 7 7-7 7" />
@@ -212,22 +212,22 @@ export function SignupWizard() {
 
             <button
               type="button"
-              className="ad-persona"
+              className="admin-persona"
               onClick={() => {
                 setPersona("parent");
                 setStep("account");
               }}
             >
-              <span className="ad-persona__ic">
+              <span className="admin-persona__ic">
                 <Ic>
                   <path d="M19.414 14.414C21 12.828 22 11.5 22 9.5a5.5 5.5 0 0 0-9.591-3.676.6.6 0 0 1-.818.001A5.5 5.5 0 0 0 2 9.5c0 2.3 1.5 4 3 5.5l5.535 5.362a2 2 0 0 0 2.879.052 2.12 2.12 0 0 0-.004-3 2.124 2.124 0 1 0 3-3 2.124 2.124 0 0 0 3.004 0 2 2 0 0 0 0-2.828l-1.881-1.882a2.41 2.41 0 0 0-3.409 0l-1.71 1.71a2 2 0 0 1-2.828 0 2 2 0 0 1 0-2.828l2.823-2.762" />
                 </Ic>
               </span>
-              <span className="ad-persona__body">
-                <span className="ad-persona__t">{t("persona.familyTitle")}</span>
-                <span className="ad-persona__d">{t("persona.familyDesc")}</span>
+              <span className="admin-persona__body">
+                <span className="admin-persona__t">{t("persona.familyTitle")}</span>
+                <span className="admin-persona__d">{t("persona.familyDesc")}</span>
               </span>
-              <span className="ad-persona__go">
+              <span className="admin-persona__go">
                 <Ic>
                   <path d="M5 12h14" />
                   <path d="m12 5 7 7-7 7" />
@@ -236,7 +236,7 @@ export function SignupWizard() {
             </button>
           </div>
 
-          <div className="ad-wiz-foot">
+          <div className="admin-wiz-foot">
             <button type="button" className="bibo-btn bibo-btn--ghost" onClick={() => nav("/login")}>
               <Ic>
                 <path d="m12 19-7-7 7-7" />
@@ -282,16 +282,16 @@ export function SignupWizard() {
     const accountReady = displayName.trim() !== "" && login.trim() !== "" && password.length >= 8;
     return (
       <AuthLayout bare hideLockup>
-        <form className="ad-wizard" onSubmit={createAccount}>
-          <div className="ad-wiz-rail">
+        <form className="admin-wizard" onSubmit={createAccount}>
+          <div className="admin-wiz-rail">
             {[0, 1, 2, 3, 4].map((i) => (
-              <span key={i} className={`ad-wiz-pip${i < 1 ? " done" : i === 1 ? " on" : ""}`} />
+              <span key={i} className={`admin-wiz-pip${i < 1 ? " done" : i === 1 ? " on" : ""}`} />
             ))}
           </div>
-          <div className="ad-wiz-step">{t("stepProgress", { current: 2, total: 5, ns: "ui" })}</div>
+          <div className="admin-wiz-step">{t("stepProgress", { current: 2, total: 5, ns: "ui" })}</div>
 
-          <h2 className="ad-wiz-title">{t("account.title")}</h2>
-          <p className="ad-wiz-sub">{t("account.sub")}</p>
+          <h2 className="admin-wiz-title">{t("account.title")}</h2>
+          <p className="admin-wiz-sub">{t("account.sub")}</p>
 
           {error && (
             <div style={{ marginBottom: 16 }}>
@@ -299,7 +299,7 @@ export function SignupWizard() {
             </div>
           )}
 
-          <div className="ad-form">
+          <div className="admin-form">
             <label className="bibo-field">
               <span className="bibo-field__lbl">{t("account.name")}</span>
               <span className="bibo-input">
@@ -340,7 +340,7 @@ export function SignupWizard() {
                 </span>
               </label>
               {login.trim() && (
-                <div className="ad-field-ok">
+                <div className="admin-field-ok">
                   <Ic>
                     <path d="M21.801 10A10 10 0 1 1 17 3.335" />
                     <path d="m9 11 3 3L22 4" />
@@ -371,13 +371,13 @@ export function SignupWizard() {
                   />
                 </span>
               </label>
-              <div className="ad-pw-meter">
-                <div className="ad-pw-meter__fill" style={{ width: `${pw.pct}%`, backgroundColor: pw.color }} />
+              <div className="admin-pw-meter">
+                <div className="admin-pw-meter__fill" style={{ width: `${pw.pct}%`, backgroundColor: pw.color }} />
               </div>
-              <div className="ad-pw-row">
-                <span className="ad-muted">{t("account.passwordPlaceholder")}</span>
+              <div className="admin-pw-row">
+                <span className="admin-muted">{t("account.passwordPlaceholder")}</span>
                 {pw.level && (
-                  <span className="ad-pw-label" style={{ color: pw.color }}>
+                  <span className="admin-pw-label" style={{ color: pw.color }}>
                     {t(`account.strength.${pw.level}`)}
                   </span>
                 )}
@@ -385,7 +385,7 @@ export function SignupWizard() {
             </div>
           </div>
 
-          <div className="ad-wiz-foot">
+          <div className="admin-wiz-foot">
             <button type="button" className="bibo-btn bibo-btn--ghost" onClick={() => setStep("persona")}>
               <Ic>
                 <path d="m12 19-7-7 7-7" />
@@ -412,16 +412,16 @@ export function SignupWizard() {
     const setupReady = orgName.trim() !== "";
     return (
       <AuthLayout bare hideLockup>
-        <form className="ad-wizard" onSubmit={finishSetup}>
-          <div className="ad-wiz-rail">
+        <form className="admin-wizard" onSubmit={finishSetup}>
+          <div className="admin-wiz-rail">
             {[0, 1, 2, 3, 4].map((i) => (
-              <span key={i} className={`ad-wiz-pip${i < 2 ? " done" : i === 2 ? " on" : ""}`} />
+              <span key={i} className={`admin-wiz-pip${i < 2 ? " done" : i === 2 ? " on" : ""}`} />
             ))}
           </div>
-          <div className="ad-wiz-step">{t("stepProgress", { current: 3, total: 5, ns: "ui" })}</div>
+          <div className="admin-wiz-step">{t("stepProgress", { current: 3, total: 5, ns: "ui" })}</div>
 
-          <h2 className="ad-wiz-title">{t("setup.title", { noun })}</h2>
-          <p className="ad-wiz-sub">{t("setup.sub", { members: terms.lowerMany })}</p>
+          <h2 className="admin-wiz-title">{t("setup.title", { noun })}</h2>
+          <p className="admin-wiz-sub">{t("setup.sub", { members: terms.lowerMany })}</p>
 
           {error && (
             <div style={{ marginBottom: 16 }}>
@@ -429,7 +429,7 @@ export function SignupWizard() {
             </div>
           )}
 
-          <div className="ad-form">
+          <div className="admin-form">
             <label className="bibo-field">
               <span className="bibo-field__lbl">{t("setup.nameLabel", { noun })}</span>
               <span className="bibo-input">
@@ -450,7 +450,7 @@ export function SignupWizard() {
             </label>
           </div>
 
-          <div className="ad-wiz-foot">
+          <div className="admin-wiz-foot">
             <button type="button" className="bibo-btn bibo-btn--ghost" onClick={() => setStep("account")}>
               <Ic>
                 <path d="m12 19-7-7 7-7" />
@@ -507,15 +507,15 @@ export function SignupWizard() {
 
   return (
     <AuthLayout bare hideLockup>
-      <div className="ad-wizard">
-        <div className="ad-wiz-rail">
+      <div className="admin-wizard">
+        <div className="admin-wiz-rail">
           {[0, 1, 2, 3, 4].map((i) => (
-            <span key={i} className={`ad-wiz-pip${i < 4 ? " done" : " on"}`} />
+            <span key={i} className={`admin-wiz-pip${i < 4 ? " done" : " on"}`} />
           ))}
         </div>
-        <div className="ad-wiz-step">{t("stepProgress", { current: 5, total: 5, ns: "ui" })}</div>
+        <div className="admin-wiz-step">{t("stepProgress", { current: 5, total: 5, ns: "ui" })}</div>
 
-        <div className="ad-burst">
+        <div className="admin-burst">
           <Ic>
             <path d="M5.8 11.3 2 22l10.7-3.79" />
             <path d="M4 3h.01" />
@@ -528,13 +528,13 @@ export function SignupWizard() {
             <path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z" />
           </Ic>
         </div>
-        <h2 className="ad-wiz-title">{t("done.title")}</h2>
-        <p className="ad-wiz-sub">{t("rail.doneDesc")}</p>
+        <h2 className="admin-wiz-title">{t("done.title")}</h2>
+        <p className="admin-wiz-sub">{t("rail.doneDesc")}</p>
 
-        <div className="ad-success-list">
+        <div className="admin-success-list">
           {doneItems.filter((it) => it.done).map((it) => (
-            <div className="ad-success-item" key={it.label}>
-              <span className={`ad-success-item__ck${it.done ? "" : " ad-success-item__ck--todo"}`}>
+            <div className="admin-success-item" key={it.label}>
+              <span className={`admin-success-item__ck${it.done ? "" : " admin-success-item__ck--todo"}`}>
                 {it.done ? (
                   <Ic>
                     <path d="M20 6 9 17l-5-5" />
@@ -550,7 +550,7 @@ export function SignupWizard() {
           ))}
         </div>
 
-        <div className="ad-wiz-foot">
+        <div className="admin-wiz-foot">
           <span className="sp" />
           <button type="button" className="bibo-btn bibo-btn--primary" onClick={() => nav("/", { replace: true })}>
             <span>{t("done.goToDashboard")}</span>
@@ -640,16 +640,16 @@ function AddMembers({
   }
 
   return (
-    <form className="ad-wizard" onSubmit={add}>
-      <div className="ad-wiz-rail">
+    <form className="admin-wizard" onSubmit={add}>
+      <div className="admin-wiz-rail">
         {[0, 1, 2, 3, 4].map((i) => (
-          <span key={i} className={`ad-wiz-pip${i < 3 ? " done" : i === 3 ? " on" : ""}`} />
+          <span key={i} className={`admin-wiz-pip${i < 3 ? " done" : i === 3 ? " on" : ""}`} />
         ))}
       </div>
-      <div className="ad-wiz-step">{t("stepProgress", { current: 4, total: 5, ns: "ui" })}</div>
+      <div className="admin-wiz-step">{t("stepProgress", { current: 4, total: 5, ns: "ui" })}</div>
 
-      <h2 className="ad-wiz-title">{t("members.title", { members: terms.lowerMany })}</h2>
-      <p className="ad-wiz-sub">{t("members.sub")}</p>
+      <h2 className="admin-wiz-title">{t("members.title", { members: terms.lowerMany })}</h2>
+      <p className="admin-wiz-sub">{t("members.sub")}</p>
 
       {error && (
         <div style={{ marginBottom: 16 }}>
@@ -657,7 +657,7 @@ function AddMembers({
         </div>
       )}
 
-      <div className="ad-addmember">
+      <div className="admin-addmember">
         <label className="bibo-field">
           <span className="bibo-field__lbl">{t("members.name")}</span>
           <span className="bibo-input">
@@ -672,7 +672,7 @@ function AddMembers({
           </span>
         </label>
 
-        <div className="ad-addmember__full">
+        <div className="admin-addmember__full">
           <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
             <div style={{ flex: 1 }}>
               <label className="bibo-field">
@@ -701,30 +701,30 @@ function AddMembers({
               <span>{busy ? t("members.adding") : t("members.addCta", { cta: terms.addCta })}</span>
             </button>
           </div>
-          <div className="ad-muted" style={{ fontSize: "11.5px", marginTop: 6 }}>
+          <div className="admin-muted" style={{ fontSize: "11.5px", marginTop: 6 }}>
             {t("members.suggestion")} : <b>{suggested}</b>
           </div>
         </div>
       </div>
 
       {members.length > 0 && (
-        <div className="ad-memberlist">
+        <div className="admin-memberlist">
           {members.map((m, i) => (
-            <div className="ad-memberitem" key={`${m.login}-${i}`}>
-              <span className="ad-memberitem__ok">
+            <div className="admin-memberitem" key={`${m.login}-${i}`}>
+              <span className="admin-memberitem__ok">
                 <Ic>
                   <path d="M20 6 9 17l-5-5" />
                 </Ic>
               </span>
-              <div className="ad-memberitem__id">
-                <div className="ad-memberitem__name">{m.display_name}</div>
-                <div className="ad-memberitem__login">
-                  {m.login} · <span className="ad-memberitem__pw">••••••••</span>
+              <div className="admin-memberitem__id">
+                <div className="admin-memberitem__name">{m.display_name}</div>
+                <div className="admin-memberitem__login">
+                  {m.login} · <span className="admin-memberitem__pw">••••••••</span>
                 </div>
               </div>
               <button
                 type="button"
-                className="ad-iconbtn-sm"
+                className="admin-iconbtn-sm"
                 title={copied === i ? t("members.copied") : t("members.copyLogin")}
                 onClick={() => copyLogin(m, i)}
               >
@@ -741,7 +741,7 @@ function AddMembers({
               </button>
               <button
                 type="button"
-                className="ad-iconbtn-sm"
+                className="admin-iconbtn-sm"
                 title={t("members.remove")}
                 onClick={() => onRemoveVisual(i)}
               >
@@ -758,7 +758,7 @@ function AddMembers({
         </div>
       )}
 
-      <div className="ad-wiz-foot">
+      <div className="admin-wiz-foot">
         <button type="button" className="bibo-btn bibo-btn--ghost" onClick={onBack}>
           <Ic>
             <path d="m12 19-7-7 7-7" />

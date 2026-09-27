@@ -53,8 +53,8 @@ export function MessageStats() {
   }, [s]);
   const maxShown = Math.max(1, ...daily.map(([, v]) => v.shown ?? 0));
 
-  if (error) return <div className="ad-wrap"><Notice kind="danger">{error}</Notice></div>;
-  if (!s) return <div className="ad-wrap"><Spinner /></div>;
+  if (error) return <div className="admin-wrap"><Notice kind="danger">{error}</Notice></div>;
+  if (!s) return <div className="admin-wrap"><Spinner /></div>;
 
   const shown = uniq(s.totals, "shown");
   const title = isWhatsNew ? `${t("internal.whatsNewShort")} ${id.replace(/^whatsnew-/, "")}` : m?.content.en?.title ?? id;
@@ -69,12 +69,12 @@ export function MessageStats() {
   }
 
   return (
-    <div className="ad-wrap" style={{ paddingBottom: 32 }}>
+    <div className="admin-wrap" style={{ paddingBottom: 32 }}>
       <Link className="im-back" to="/internal/messages">← {t("internal.back")}</Link>
-      <div className="ad-pagehead">
-        <div className="ad-pagehead__main">
-          <h1 className="ad-h1">{title}</h1>
-          <p className="ad-sub">
+      <div className="admin-pagehead">
+        <div className="admin-pagehead__main">
+          <h1 className="admin-h1">{title}</h1>
+          <p className="admin-sub">
             {id}
             {m && <> · {t(`internal.kind.${m.kind}`)} · <span className={`im-status im-status--${messageStatus(m)}`}>{t(`internal.status.${messageStatus(m)}`)}</span></>}
           </p>
@@ -105,7 +105,7 @@ export function MessageStats() {
           const c = s.totals[e];
           const rate = e === "cta" ? pct(uniq(s.totals, "cta"), shown) : e === "submitted" ? pct(uniq(s.totals, "submitted"), shown) : null;
           return (
-            <div key={e} className="bibo-card bibo-card--default ad-cardpad im-kpi">
+            <div key={e} className="bibo-card bibo-card--default admin-cardpad im-kpi">
               <div className="im-kpi__lbl">{t(`internal.stat.${e}`)}</div>
               <div className="im-kpi__val num">{c?.unique ?? 0}</div>
               <div className="im-kpi__sub">
@@ -117,12 +117,12 @@ export function MessageStats() {
         })}
       </div>
 
-      <div className="bibo-card bibo-card--default ad-cardpad im-section">
-        <div className="ad-paneltitle">{t("internal.stat.daily")}</div>
+      <div className="bibo-card bibo-card--default admin-cardpad im-section">
+        <div className="admin-paneltitle">{t("internal.stat.daily")}</div>
         {daily.length === 0 ? (
           <Empty>{t("internal.stat.noData")}</Empty>
         ) : (
-          <table className="ad-table im-table">
+          <table className="admin-table im-table">
             <thead>
               <tr>
                 <th>{t("internal.stat.day")}</th>
@@ -152,9 +152,9 @@ export function MessageStats() {
             }
             const conv: MessageEvent = isSurvey ? "submitted" : "cta";
             return (
-              <div key={dim} className="bibo-card bibo-card--default ad-cardpad">
-                <div className="ad-paneltitle">{t(`internal.stat.dim.${dim}`)}</div>
-                <table className="ad-table im-table">
+              <div key={dim} className="bibo-card bibo-card--default admin-cardpad">
+                <div className="admin-paneltitle">{t(`internal.stat.dim.${dim}`)}</div>
+                <table className="admin-table im-table">
                   <thead>
                     <tr>
                       <th></th>
@@ -179,9 +179,9 @@ export function MessageStats() {
       )}
 
       {isSurvey && (
-        <div className="bibo-card bibo-card--default ad-cardpad im-section">
+        <div className="bibo-card bibo-card--default admin-cardpad im-section">
           <div className="im-survey-head">
-            <div className="ad-paneltitle">
+            <div className="admin-paneltitle">
               {t("internal.stat.survey")} · {t("internal.stat.answers", { count: s.responses?.length ?? 0 })}
             </div>
             {(s.responses?.length ?? 0) > 0 && (
@@ -212,7 +212,7 @@ function QuestionSummary({ q }: { q: MessageFieldSummary }) {
   return (
     <div className="im-qsum">
       <div className="im-qsum__label">
-        {q.label} <span className="ad-muted">· {t("internal.stat.answers", { count: q.answered })}</span>
+        {q.label} <span className="admin-muted">· {t("internal.stat.answers", { count: q.answered })}</span>
       </div>
       {q.options?.map((o) => (
         <div key={o.value} className="im-optbar">
@@ -273,12 +273,12 @@ function Responses({ message, rows }: { message: MessageDef; rows: MessageRespon
   };
 
   return (
-    <div className="bibo-card bibo-card--default ad-cardpad im-section">
-      <div className="ad-paneltitle">
+    <div className="bibo-card bibo-card--default admin-cardpad im-section">
+      <div className="admin-paneltitle">
         {t("internal.resp.title")} · {rows.length}
       </div>
       <div className="im-resp-scroll">
-        <table className="ad-table im-table im-resp">
+        <table className="admin-table im-table im-resp">
           <thead>
             <tr>
               <th>{t("internal.resp.when")}</th>
@@ -300,13 +300,13 @@ function Responses({ message, rows }: { message: MessageDef; rows: MessageRespon
                       <div className="im-id">{r.user_login}</div>
                     </>
                   ) : (
-                    <span className="ad-muted">{t("internal.resp.anonymous")}</span>
+                    <span className="admin-muted">{t("internal.resp.anonymous")}</span>
                   )}
                 </td>
                 {fields.map((f) => (
                   <td key={f.id} className="im-resp__ans">{show(f.id, r.answers[f.id])}</td>
                 ))}
-                <td className="im-resp__app ad-muted">
+                <td className="im-resp__app admin-muted">
                   {[r.app_version, r.platform, r.locale].filter(Boolean).join(" · ") || "—"}
                 </td>
               </tr>

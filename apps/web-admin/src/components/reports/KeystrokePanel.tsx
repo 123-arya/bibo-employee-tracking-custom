@@ -45,16 +45,16 @@ export function KeystrokePanel({ buckets }: { buckets: KeystrokeBucket[] }) {
 
   return (
     <div>
-      <div className="ad-panelhead">
-        <div className="ad-paneltitle">{t("keystrokes.title")}</div>
+      <div className="admin-panelhead">
+        <div className="admin-paneltitle">{t("keystrokes.title")}</div>
       </div>
 
-      <div className="ad-act-total">
-        <span className="ad-act-num">{shownTotal.toLocaleString()}</span>
-        <span className="ad-act-lbl">{t("keystrokes.keypresses")}</span>
+      <div className="admin-act-total">
+        <span className="admin-act-num">{shownTotal.toLocaleString()}</span>
+        <span className="admin-act-lbl">{t("keystrokes.keypresses")}</span>
       </div>
 
-      <div className="ad-chartscroll" ref={scrollRef}>
+      <div className="admin-chartscroll" ref={scrollRef}>
         <svg width={svgW} height={H} viewBox={`0 0 ${svgW} ${H}`} style={{ overflow: "visible" }}>
           {buckets.map((b, i) => {
             const h = (b.count / max) * chartH;
@@ -110,11 +110,11 @@ export function KeystrokePanel({ buckets }: { buckets: KeystrokeBucket[] }) {
         </svg>
       </div>
 
-      <div className="ad-timechips">
+      <div className="admin-timechips">
         {buckets.map((b, i) => (
           <button
             key={b.ts_bucket}
-            className={`ad-timechip${i === active ? " ad-timechip--on" : ""}`}
+            className={`admin-timechip${i === active ? " admin-timechip--on" : ""}`}
             onClick={() => setSel(i)}
           >
             {hhmm(b.ts_bucket)}

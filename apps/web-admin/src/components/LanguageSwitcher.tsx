@@ -91,7 +91,7 @@ export function LanguageSwitcher({
       </button>
       {open && (
         <div
-          className={`ad-menu ad-menu--${align}${drop === "up" ? " ad-menu--up" : ""}`}
+          className={`admin-menu admin-menu--${align}${drop === "up" ? " admin-menu--up" : ""}`}
           role="listbox"
         >
           {LOCALES.map((l) => (
@@ -100,7 +100,7 @@ export function LanguageSwitcher({
               key={l.code}
               role="option"
               aria-selected={l.code === code}
-              className={`ad-menu__opt${l.code === code ? " on" : ""}`}
+              className={`admin-menu__opt${l.code === code ? " on" : ""}`}
               onClick={() => pick(l.code)}
             >
               {l.label}
