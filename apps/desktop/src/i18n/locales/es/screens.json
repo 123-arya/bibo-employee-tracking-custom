@@ -132,7 +132,8 @@
       "next": "Siguiente",
       "loading": "Cargando…",
       "alt": "Captura de pantalla",
-      "display": "Pantalla {{id}}"
+      "display": "Pantalla {{id}}",
+      "loadMore": "Cargar más"
     },
     "dateMode": "Modo de fecha"
   }

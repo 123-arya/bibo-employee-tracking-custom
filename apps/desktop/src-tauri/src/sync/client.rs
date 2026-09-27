@@ -626,15 +626,19 @@ impl BackendClient {
         Err("owner_businesses: unreachable retry exhaustion".into())
     }
 
-    /// `GET /v1/reports/employees?business_id=…` (auto-refresh on 401) — today's
-    /// roster for one owned workspace.
-    pub async fn owner_roster(&self, business_id: &str) -> Result<Vec<RosterEntry>, String> {
+    /// `GET /v1/reports/employees?business_id=…&day_start=…` (auto-refresh on 401)
+    /// — the roster for one owned workspace, "today" starting at `day_start`.
+    pub async fn owner_roster(
+        &self,
+        business_id: &str,
+        day_start: i64,
+    ) -> Result<Vec<RosterEntry>, String> {
         let mut token = self.access_token()?;
         for attempt in 0..2 {
             let resp = self
                 .http
                 .get(self.url("/v1/reports/employees"))
-                .query(&[("business_id", business_id)])
+                .query(&[("business_id", business_id.to_string()), ("day_start", day_start.to_string())])
                 .bearer_auth(&token)
                 .send()
                 .await
@@ -744,10 +748,13 @@ impl BackendClient {
         Err("owner_employee_browser: unreachable retry exhaustion".into())
     }
 
-    /// `GET /v1/reports/employees/{id}/screenshots?limit=&offset=` (auto-refresh on 401).
+    /// `GET /v1/reports/employees/{id}/screenshots?from=&to=&limit=&offset=`
+    /// (auto-refresh on 401).
     pub async fn owner_employee_screenshots(
         &self,
         employee_id: &str,
+        from: i64,
+        to: i64,
         limit: u32,
         offset: u32,
     ) -> Result<ScreenshotPage, String> {
@@ -757,7 +764,12 @@ impl BackendClient {
             let resp = self
                 .http
                 .get(self.url(&path))
-                .query(&[("limit", limit.to_string()), ("offset", offset.to_string())])
+                .query(&[
+                    ("from", from.to_string()),
+                    ("to", to.to_string()),
+                    ("limit", limit.to_string()),
+                    ("offset", offset.to_string()),
+                ])
                 .bearer_auth(&token)
                 .send()
                 .await

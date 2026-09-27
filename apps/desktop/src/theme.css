@@ -2319,6 +2319,12 @@ td {
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
 }
+/* Admin gallery: "Load more" under the grid. */
+.bb-empshots__more {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
 /* One capture tile: the (blurred) screenshot, a legibility veil, and a time chip. */
 .bb-shot {
   position: relative;

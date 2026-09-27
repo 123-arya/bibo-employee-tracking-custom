@@ -7,13 +7,20 @@ import { fmtBytes, hhmmss, type ScreenshotMetaRow } from "../reportTypes";
 // The image endpoint needs the owner's bearer token, so a plain <img src> can't
 // reach it — the Rust `admin_screenshot_data` command fetches the bytes and
 // returns a base64 data: URL. Cached per uuid so re-opening the lightbox / the
-// thumbnail behind it doesn't refetch.
-const cache = new Map<string, string>();
+// thumbnail behind it doesn't refetch; least-recently-used entries are evicted
+// past CACHE_MAX so browsing many members/days doesn't grow memory unbounded.
+const CACHE_MAX = 80;
+const cache = new Map<string, string>(); // insertion order = recency
 async function loadImage(clientUuid: string): Promise<string> {
   const hit = cache.get(clientUuid);
-  if (hit) return hit;
+  if (hit) {
+    cache.delete(clientUuid);
+    cache.set(clientUuid, hit);
+    return hit;
+  }
   const url = await invoke<string>("admin_screenshot_data", { clientUuid });
   cache.set(clientUuid, url);
+  if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value!);
   return url;
 }
 
@@ -125,7 +132,16 @@ function Lightbox({
   );
 }
 
-export function ScreenshotGallery({ shots }: { shots: ScreenshotMetaRow[] }) {
+export function ScreenshotGallery({
+  shots,
+  onLoadMore,
+  loadingMore,
+}: {
+  shots: ScreenshotMetaRow[];
+  /** Set when more screenshots exist in the range. */
+  onLoadMore?: () => void;
+  loadingMore?: boolean;
+}) {
   const { t } = useTranslation();
   const [active, setActive] = useState<number | null>(null);
 
@@ -140,6 +156,13 @@ export function ScreenshotGallery({ shots }: { shots: ScreenshotMetaRow[] }) {
           <Shot key={s.client_uuid} meta={s} onOpen={() => setActive(i)} />
         ))}
       </div>
+      {onLoadMore && (
+        <div className="bb-empshots__more">
+          <button type="button" className="bibo-btn bibo-btn--secondary" onClick={onLoadMore} disabled={loadingMore}>
+            {loadingMore ? t("screens:detail.screenshots.loading") : t("screens:detail.screenshots.loadMore")}
+          </button>
+        </div>
+      )}
       {active != null && (
         <Lightbox shots={shots} index={active} onIndex={setActive} onClose={() => setActive(null)} />
       )}

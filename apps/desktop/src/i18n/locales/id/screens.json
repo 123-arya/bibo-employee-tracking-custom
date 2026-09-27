@@ -132,7 +132,8 @@
       "next": "Berikutnya",
       "loading": "Memuat…",
       "alt": "Tangkapan layar",
-      "display": "Layar {{id}}"
+      "display": "Layar {{id}}",
+      "loadMore": "Muat lebih banyak"
     },
     "dateMode": "Mode tanggal"
   }

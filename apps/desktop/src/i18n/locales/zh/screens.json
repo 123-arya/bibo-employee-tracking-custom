@@ -132,7 +132,8 @@
       "next": "下一张",
       "loading": "加载中…",
       "alt": "截图",
-      "display": "显示器 {{id}}"
+      "display": "显示器 {{id}}",
+      "loadMore": "加载更多"
     },
     "dateMode": "日期模式"
   }

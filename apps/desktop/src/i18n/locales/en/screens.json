@@ -132,7 +132,8 @@
       "next": "Next",
       "loading": "Loading…",
       "alt": "Screenshot",
-      "display": "Display {{id}}"
+      "display": "Display {{id}}",
+      "loadMore": "Load more"
     },
     "dateMode": "Date mode"
   }

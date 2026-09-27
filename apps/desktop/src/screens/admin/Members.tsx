@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { call as invoke } from "../../api";
-import { AVATAR_PALETTE, initials, type OwnerBusiness, type RosterEntry } from "./AdminDashboard";
+import { AVATAR_PALETTE, initials, localDayStart, type OwnerBusiness, type RosterEntry } from "./AdminDashboard";
 import { EmployeeDetail } from "./EmployeeDetail";
 
 const svgp = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" } as const;
@@ -52,7 +52,7 @@ export function Members({
   businessKind: string;
   onWorkspaceCreated: (b: OwnerBusiness) => void;
   detail: RosterEntry | null;
-  onView: (e: RosterEntry) => void;
+  onView: (e: RosterEntry | null) => void;
 }) {
   const { t } = useTranslation();
   const [rows, setRows] = useState<RosterEntry[] | null>(null);
@@ -102,7 +102,7 @@ export function Members({
   const load = useCallback(() => {
     setRows(null);
     setListError(null);
-    invoke<RosterEntry[]>("admin_roster", { businessId })
+    invoke<RosterEntry[]>("admin_roster", { businessId, dayStart: localDayStart() })
       .then(setRows)
       .catch((e) => setListError(String(e)));
   }, [businessId]);
@@ -166,7 +166,7 @@ export function Members({
   }
 
   if (detail) {
-    return <EmployeeDetail employee={detail} />;
+    return <EmployeeDetail employee={detail} onBack={() => onView(null)} />;
   }
 
   const list = rows ?? [];

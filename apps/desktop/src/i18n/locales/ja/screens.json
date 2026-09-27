@@ -132,7 +132,8 @@
       "next": "次へ",
       "loading": "読み込み中…",
       "alt": "スクリーンショット",
-      "display": "ディスプレイ {{id}}"
+      "display": "ディスプレイ {{id}}",
+      "loadMore": "さらに読み込む"
     },
     "dateMode": "日付モード"
   }

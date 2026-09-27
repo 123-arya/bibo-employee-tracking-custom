@@ -44,21 +44,12 @@ function fmtRelative(unix: number | null, locale: string, never: string): string
   return rtf.format(Math.round(diff / 86400), "day");
 }
 
-/** Deterministic pseudo-random series in [0,1] from a seed — a PLACEHOLDER
- *  sparkline (same approach as the web-admin) until the backend exposes real
- *  per-member trend data. Stable across renders, no flicker. */
-function seededSeries(seed: string, n = 8): number[] {
-  let h = 2166136261;
-  for (let i = 0; i < seed.length; i++) {
-    h ^= seed.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  const out: number[] = [];
-  for (let i = 0; i < n; i++) {
-    h = Math.imul(h ^ (h >>> 15), 2246822519);
-    out.push(((h >>> 0) % 1000) / 1000);
-  }
-  return out;
+/** The viewer's local midnight (unix seconds) — sent as the roster's `day_start`
+ *  so "today" matches the per-employee detail views (which use local days). */
+export function localDayStart(): number {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return Math.floor(d.getTime() / 1000);
 }
 
 export const initials = (name: string) =>
@@ -90,38 +81,6 @@ function countDelta(today: number, yesterday: number): Delta {
   return { text: `${diff > 0 ? "+" : "−"}${Math.abs(diff)}`, dir: diff > 0 ? "up" : "down" };
 }
 
-/* Tiny smoothed sparkline (gradient area + line + end dot) from a [0,1] series. */
-function Sparkline({ data, color, width = 44, height = 20 }: { data: number[]; color: string; width?: number; height?: number }) {
-  const P = 3;
-  const n = data.length;
-  if (n < 2) return null;
-  const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
-  const xs = data.map((_, i) => P + (i * (width - 2 * P)) / (n - 1));
-  const ys = data.map((v) => P + (height - 2 * P) * (1 - (v - min) / range));
-  let d = `M ${xs[0]} ${ys[0]}`;
-  for (let i = 0; i < n - 1; i++) {
-    const x0 = xs[Math.max(0, i - 1)], y0 = ys[Math.max(0, i - 1)];
-    const x1 = xs[i], y1 = ys[i];
-    const x2 = xs[i + 1], y2 = ys[i + 1];
-    const x3 = xs[Math.min(n - 1, i + 2)], y3 = ys[Math.min(n - 1, i + 2)];
-    d += ` C ${x1 + (x2 - x0) / 6} ${y1 + (y2 - y0) / 6}, ${x2 - (x3 - x1) / 6} ${y2 - (y3 - y1) / 6}, ${x2} ${y2}`;
-  }
-  const gid = "adsp-" + color.replace(/[^a-z0-9]/gi, "");
-  return (
-    <svg width={width} height={height} style={{ display: "block", overflow: "visible" }} aria-hidden>
-      <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={`${d} L ${xs[n - 1]} ${height} L ${xs[0]} ${height} Z`} fill={`url(#${gid})`} />
-      <path d={d} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={xs[n - 1]} cy={ys[n - 1]} r="2.4" fill={color} />
-    </svg>
-  );
-}
-
 /* ── icons ── */
 const svgp = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 const IconClock = () => (<svg {...svgp} aria-hidden><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>);
@@ -150,7 +109,7 @@ export function AdminDashboard({
     if (!businessId) return;
     setRows(null);
     setError(null);
-    invoke<RosterEntry[]>("admin_roster", { businessId })
+    invoke<RosterEntry[]>("admin_roster", { businessId, dayStart: localDayStart() })
       .then(setRows)
       .catch((e) => setError(String(e)));
   }, [businessId]);
@@ -189,21 +148,18 @@ export function AdminDashboard({
           delta={recDelta?.text}
           deltaDir={recDelta?.dir ?? "none"}
           sub={totalYesterdayS > 0 ? t("screens:dashboard.vsYesterday") : t("screens:dashboard.today")}
-          chart={<Sparkline data={seededSeries("recorded")} color="var(--accent)" />}
         />
         <StatCard
           icon={<IconUsers />}
           label={t("screens:admin.activeToday")}
           value={`${activeCount} / ${list.length}`}
           sub={`${list.length} ${t("screens:admin.employees").toLowerCase()}`}
-          chart={<Sparkline data={seededSeries("active")} color="var(--data-sky)" />}
         />
         <StatCard
           icon={<IconTarget />}
           label={t("screens:admin.avgFocus")}
           value={avgFocus == null ? "—" : `${avgFocus}%`}
           sub={t("screens:dashboard.today")}
-          chart={<Sparkline data={seededSeries("focus")} color="var(--data-mint)" />}
         />
         <StatCard
           icon={<IconCamera />}
@@ -212,7 +168,6 @@ export function AdminDashboard({
           delta={shotDelta?.text}
           deltaDir={shotDelta?.dir ?? "none"}
           sub={t("screens:dashboard.today")}
-          chart={<Sparkline data={seededSeries("shots")} color="var(--data-teal)" />}
         />
       </div>
 
@@ -268,8 +223,7 @@ export function AdminDashboard({
                     <td className="c num">{fmtClock(e.active_today_s)}</td>
                     <td className="r">
                       <span className="bb-adminboard__focus">
-                        <Sparkline data={seededSeries(e.id)} color={col} width={56} height={20} />
-                        <span className="num">{focus == null ? "—" : `${focus}%`}</span>
+                        <span className="num" style={{ color: col }}>{focus == null ? "—" : `${focus}%`}</span>
                       </span>
                     </td>
                     <td className="r">

@@ -460,13 +460,16 @@ pub async fn admin_businesses(
 }
 
 /// Today's employee roster for an owned workspace (`GET /v1/reports/employees`).
+/// `day_start` is the viewer's local midnight (unix seconds), so "today" matches
+/// the per-employee detail views.
 #[tauri::command]
 pub async fn admin_roster(
     business_id: String,
+    day_start: i64,
     auth: State<'_, Arc<AuthState>>,
 ) -> Result<Vec<crate::sync::client::RosterEntry>, String> {
     let client = BackendClient::new(backend_url(), auth.inner().clone());
-    client.owner_roster(&business_id).await
+    client.owner_roster(&business_id, day_start).await
 }
 
 // ---------- admin: per-employee detail reports ----------
@@ -509,17 +512,20 @@ pub async fn admin_employee_browser(
     client.owner_employee_browser(&employee_id, from, to).await
 }
 
-/// Paginated screenshot metadata for one employee (newest first from the backend).
+/// Paginated screenshot metadata for one employee in `[from, to)` (unix seconds),
+/// newest first from the backend.
 #[tauri::command]
 pub async fn admin_employee_screenshots(
     employee_id: String,
+    from: i64,
+    to: i64,
     limit: u32,
     offset: u32,
     auth: State<'_, Arc<AuthState>>,
 ) -> Result<crate::sync::client::ScreenshotPage, String> {
     let client = BackendClient::new(backend_url(), auth.inner().clone());
     client
-        .owner_employee_screenshots(&employee_id, limit, offset)
+        .owner_employee_screenshots(&employee_id, from, to, limit, offset)
         .await
 }
 

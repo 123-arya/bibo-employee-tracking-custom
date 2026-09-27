@@ -132,7 +132,8 @@
       "next": "Sau",
       "loading": "Đang tải…",
       "alt": "Ảnh chụp",
-      "display": "Màn hình {{id}}"
+      "display": "Màn hình {{id}}",
+      "loadMore": "Tải thêm"
     },
     "dateMode": "Chế độ ngày"
   }

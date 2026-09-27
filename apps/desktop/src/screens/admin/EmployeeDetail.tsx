@@ -16,6 +16,7 @@ import {
 } from "./reportTypes";
 
 type Tab = "activity" | "keystrokes" | "browser" | "screenshots";
+const SHOTS_PAGE = 50;
 const TABS: Tab[] = ["activity", "keystrokes", "browser", "screenshots"];
 
 const svgp = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" } as const;
@@ -70,6 +71,11 @@ export function EmployeeDetail({
   const [keystrokes, setKeystrokes] = useState<KeystrokeBucketRow[] | null>(null);
   const [visits, setVisits] = useState<BrowserVisitRow[] | null>(null);
   const [shots, setShots] = useState<ScreenshotMetaRow[] | null>(null);
+  // Screenshots page in (newest first) within the loaded range; a full page means
+  // there may be more.
+  const [shotsRange, setShotsRange] = useState<{ from: number; to: number } | null>(null);
+  const [shotsMore, setShotsMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,12 +94,16 @@ export function EmployeeDetail({
         invoke<EmployeeActivity>("admin_employee_activity", { employeeId: id, from: f, to: t2 }),
         invoke<KeystrokeBucketRow[]>("admin_employee_keystrokes", { employeeId: id, from: f, to: t2 }),
         invoke<BrowserVisitRow[]>("admin_employee_browser", { employeeId: id, from: f, to: t2 }),
-        invoke<{ screenshots: ScreenshotMetaRow[] }>("admin_employee_screenshots", { employeeId: id, limit: 50, offset: 0 }),
+        invoke<{ screenshots: ScreenshotMetaRow[] }>("admin_employee_screenshots", {
+          employeeId: id, from: f, to: t2, limit: SHOTS_PAGE, offset: 0,
+        }),
       ]);
       setActivity(a);
       setKeystrokes(k);
       setVisits(b);
       setShots(s.screenshots);
+      setShotsRange({ from: f, to: t2 });
+      setShotsMore(s.screenshots.length === SHOTS_PAGE);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -105,6 +115,22 @@ export function EmployeeDetail({
     load();
   }, [load]);
 
+  async function loadMoreShots() {
+    if (!shots || !shotsRange || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const page = await invoke<{ screenshots: ScreenshotMetaRow[] }>("admin_employee_screenshots", {
+        employeeId: employee.id, from: shotsRange.from, to: shotsRange.to, limit: SHOTS_PAGE, offset: shots.length,
+      });
+      setShots([...shots, ...page.screenshots]);
+      setShotsMore(page.screenshots.length === SHOTS_PAGE);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
   const today = isoDate(new Date());
   const activeS = activity?.breakdown.reduce((sum, b) => sum + b.duration_s, 0) ?? 0;
   const topApp = activity?.breakdown[0]?.app_name ?? "—";
@@ -115,6 +141,7 @@ export function EmployeeDetail({
   const name = employee.display_name;
   const isSelf = employee.role === "owner";
   const status = memberStatus(employee.last_seen);
+  const period = mode === "day" ? t("screens:detail.singleDay") : t("screens:detail.dateRange");
 
   const dateInput = (value: string, onChange: (v: string) => void, min?: string, max?: string): ReactElement => (
     <input type="date" value={value} min={min} max={max} onChange={(e) => onChange(e.target.value)} />
@@ -195,33 +222,27 @@ export function EmployeeDetail({
           icon={<IconClock />}
           label={t("screens:detail.summary.activeTime")}
           value={fmtHM(activeS)}
-          delta="12%"
-          deltaDir="up"
-          sub={mode === "day" ? t("screens:detail.singleDay") : t("screens:detail.dateRange")}
+          sub={period}
         />
         <StatCard
           icon={<IconApp />}
           label={t("screens:detail.summary.topApp")}
           value={topApp}
-          delta={`${topShare}%`}
-          deltaDir="up"
-          sub={t("screens:admin.avgFocus")}
+          delta={activeS > 0 ? `${topShare}%` : undefined}
+          deltaDir="none"
+          sub={activeS > 0 ? fmtHM(topAppS) : period}
         />
         <StatCard
           icon={<IconKeyboard />}
           label={t("screens:detail.summary.keypresses")}
           value={keypresses.toLocaleString()}
-          delta="8%"
-          deltaDir="up"
-          sub={t("screens:dashboard.vsYesterday")}
+          sub={period}
         />
         <StatCard
           icon={<IconCamera />}
           label={t("screens:detail.summary.screenshots")}
-          value={String(shots?.length ?? 0)}
-          delta="+4"
-          deltaDir="up"
-          sub={t("screens:dashboard.today")}
+          value={`${shots?.length ?? 0}${shotsMore ? "+" : ""}`}
+          sub={period}
         />
       </div>
 
@@ -242,7 +263,13 @@ export function EmployeeDetail({
             {tab === "activity" && activity && <ActivityPanel data={activity} />}
             {tab === "keystrokes" && keystrokes && <KeystrokePanel buckets={keystrokes} />}
             {tab === "browser" && visits && <BrowserPanel visits={visits} />}
-            {tab === "screenshots" && shots && <ScreenshotGallery shots={shots} />}
+            {tab === "screenshots" && shots && (
+              <ScreenshotGallery
+                shots={shots}
+                onLoadMore={shotsMore ? loadMoreShots : undefined}
+                loadingMore={loadingMore}
+              />
+            )}
           </>
         )}
       </div>
