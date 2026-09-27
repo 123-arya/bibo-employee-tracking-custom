@@ -185,7 +185,16 @@ function Lightbox({
   );
 }
 
-export function ScreenshotGallery({ shots }: { shots: ScreenshotMeta[] }) {
+export function ScreenshotGallery({
+  shots,
+  onLoadMore,
+  loadingMore,
+}: {
+  shots: ScreenshotMeta[];
+  /** Set when more screenshots exist in the range. */
+  onLoadMore?: () => void;
+  loadingMore?: boolean;
+}) {
   const { t } = useTranslation("reports");
   const [active, setActive] = useState<number | null>(null);
 
@@ -201,6 +210,13 @@ export function ScreenshotGallery({ shots }: { shots: ScreenshotMeta[] }) {
           <Shot key={s.client_uuid} meta={s as ShotMeta} onOpen={() => setActive(i)} />
         ))}
       </div>
+      {onLoadMore && (
+        <div className="ad-gallery__more">
+          <button type="button" className="bibo-btn bibo-btn--secondary" onClick={onLoadMore} disabled={loadingMore}>
+            {loadingMore ? t("screenshots.loading") : t("screenshots.loadMore")}
+          </button>
+        </div>
+      )}
       {active != null && (
         <Lightbox shots={shots} index={active} onIndex={setActive} onClose={() => setActive(null)} />
       )}

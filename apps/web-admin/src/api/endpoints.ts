@@ -129,10 +129,14 @@ export function listBusinessEmployees(businessId: string) {
 }
 
 // ---------- reports ----------
+// "Today" for the roster starts at the viewer's local midnight (not the server's
+// UTC day), so it matches the per-employee views, which use local dates.
 export function reportEmployees(businessId: string) {
   if (isDemo()) return Promise.resolve({ employees: demoRoster() });
+  const midnight = new Date();
+  midnight.setHours(0, 0, 0, 0);
   return request<{ employees: ReportEmployee[] }>("/v1/reports/employees", {
-    query: { business_id: businessId },
+    query: { business_id: businessId, day_start: Math.floor(midnight.getTime() / 1000) },
   });
 }
 

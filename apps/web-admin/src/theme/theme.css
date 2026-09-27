@@ -3327,6 +3327,12 @@ select.input:focus,
   gap: 16px;
   margin-top: 6px;
 }
+/* "Load more" under the screenshot gallery. */
+.ad-gallery__more {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
 .ad-shot {
   position: relative;
   aspect-ratio: 16 / 10;

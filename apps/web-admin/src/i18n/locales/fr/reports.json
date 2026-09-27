@@ -35,6 +35,7 @@
     "title": "Captures d'écran",
     "prev": "Capture précédente",
     "next": "Capture suivante",
-    "close": "Fermer"
+    "close": "Fermer",
+    "loadMore": "Charger plus"
   }
 }

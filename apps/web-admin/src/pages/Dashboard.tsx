@@ -4,7 +4,6 @@ import { Trans, useTranslation } from "react-i18next";
 import { reportEmployees } from "../api/endpoints";
 import type { ReportEmployee } from "../api/types";
 import { Empty, Notice, Spinner } from "../components/ui";
-import { Sparkline } from "../components/Sparkline";
 import { fmtRelative } from "../format";
 import { useBusinesses } from "../useBusinesses";
 import { memberTerms } from "../terms";
@@ -21,29 +20,12 @@ function fmtClock(seconds: number): string {
 }
 
 type Status = "active" | "idle" | "offline";
-function memberStatus(lastSeen: number | null): Status {
+export function memberStatus(lastSeen: number | null): Status {
   if (!lastSeen) return "offline";
   const ageS = Date.now() / 1000 - lastSeen;
   if (ageS < 5 * 60) return "active";
   if (ageS < 30 * 60) return "idle";
   return "offline";
-}
-
-/** Deterministic pseudo-random series in [0,1] from a string seed (stable across
- *  renders, no flicker). Used only for PLACEHOLDER sparklines until the backend
- *  exposes real trend data. */
-function seededSeries(seed: string, n = 8): number[] {
-  let h = 2166136261;
-  for (let i = 0; i < seed.length; i++) {
-    h ^= seed.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  const out: number[] = [];
-  for (let i = 0; i < n; i++) {
-    h = Math.imul(h ^ (h >>> 15), 2246822519);
-    out.push(((h >>> 0) % 1000) / 1000);
-  }
-  return out;
 }
 
 const AVATAR_PALETTE = [
@@ -108,9 +90,8 @@ function StatCard(props: {
   focal?: boolean;
   delta?: Delta;
   sub?: string;
-  spark: { data: number[]; color: string };
 }) {
-  const { icon, label, value, focal, delta, sub, spark } = props;
+  const { icon, label, value, focal, delta, sub } = props;
   return (
     <div className={`bibo-card ${focal ? "bibo-card--focal" : "bibo-card--default"} ad-cardpad`}>
       <div className={`bibo-stat${focal ? " bibo-stat--focal" : ""}`}>
@@ -127,9 +108,6 @@ function StatCard(props: {
             </span>
           )}
           {sub && <span className="bibo-stat__sub">{sub}</span>}
-          <span style={{ marginLeft: "auto" }}>
-            <Sparkline data={spark.data} color={spark.color} />
-          </span>
         </div>
       </div>
     </div>
@@ -217,21 +195,18 @@ export function Dashboard() {
               value={fmtClock(totalRecordedS)}
               delta={pctDelta(totalRecordedS, totalYesterdayS)}
               sub={totalYesterdayS > 0 ? t("dashboard.vsYesterday") : t("dashboard.todayLabel")}
-              spark={{ data: seededSeries("recorded"), color: "var(--violet)" }}
             />
             <StatCard
               icon={IconUsers}
               label={t("dashboard.statActive")}
               value={`${activeCount} / ${rows.length}`}
               sub={t("dashboard.ofMembers", { count: rows.length, members: terms.many })}
-              spark={{ data: seededSeries("active"), color: "var(--data-sky)" }}
             />
             <StatCard
               icon={IconTarget}
               label={t("dashboard.statFocus")}
               value={avgFocus == null ? "—" : <>{avgFocus}<span className="bibo-stat__unit">%</span></>}
               sub={t("dashboard.todayLabel")}
-              spark={{ data: seededSeries("focus"), color: "var(--positive)" }}
             />
             <StatCard
               icon={IconCamera}
@@ -239,7 +214,6 @@ export function Dashboard() {
               value={screenshotCount}
               delta={countDelta(screenshotCount, screenshotsYday)}
               sub={t("dashboard.todayLabel")}
-              spark={{ data: seededSeries("shots"), color: "var(--data-mint)" }}
             />
           </div>
 
@@ -283,8 +257,7 @@ export function Dashboard() {
                       <td className="r ad-dur">{fmtClock(e.active_today_s)}</td>
                       <td className="r">
                         <span className="ad-rowprod">
-                          <Sparkline data={seededSeries(e.id)} color={col} width={56} height={20} />
-                          <span className="ad-rowprod__pct">{focus == null ? "—" : `${focus}%`}</span>
+                          <span className="ad-rowprod__pct" style={{ color: col }}>{focus == null ? "—" : `${focus}%`}</span>
                         </span>
                       </td>
                       <td className="r">
