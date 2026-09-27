@@ -27,6 +27,7 @@ import { useAuth } from "../auth/AuthContext";
 import { useDetailHeader } from "../detailHeader";
 
 type Tab = "activity" | "keystrokes" | "browser" | "screenshots";
+const SHOTS_PAGE = 60;
 const TABS: Tab[] = ["activity", "keystrokes", "browser", "screenshots"];
 
 // ── inline icons (no icon dependency in web-admin) ───────────────────
@@ -41,11 +42,6 @@ const IconClock = svg(<><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /
 const IconAppWindow = svg(<><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M10 4v4" /><path d="M2 8h20" /><path d="M6 4v4" /></>);
 const IconKeyboard = svg(<><path d="M10 8h.01" /><path d="M12 12h.01" /><path d="M14 8h.01" /><path d="M16 12h.01" /><path d="M18 8h.01" /><path d="M6 8h.01" /><path d="M7 16h10" /><path d="M8 12h.01" /><rect width="20" height="16" x="2" y="4" rx="2" /></>);
 const IconCamera = svg(<><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z" /><circle cx="12" cy="13" r="3" /></>);
-const TrendUp = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-    <path d="M7 17 17 7M9 7h8v8" />
-  </svg>
-);
 
 const initials = (name: string) =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("") || "?";
@@ -65,10 +61,9 @@ function StatCard(props: {
   label: string;
   value: ReactNode;
   focal?: boolean;
-  delta?: string;
   sub?: string;
 }) {
-  const { icon, label, value, focal, delta, sub } = props;
+  const { icon, label, value, focal, sub } = props;
   return (
     <div className={`bibo-card ${focal ? "bibo-card--focal" : "bibo-card--default"} ad-cardpad`}>
       <div className={`bibo-stat${focal ? " bibo-stat--focal" : ""}`}>
@@ -78,12 +73,6 @@ function StatCard(props: {
         </div>
         <div className="bibo-stat__value">{value}</div>
         <div className="bibo-stat__foot">
-          {delta && (
-            <span className="bibo-stat__delta bibo-stat__delta--up">
-              {TrendUp}
-              {delta}
-            </span>
-          )}
           {sub && <span className="bibo-stat__sub">{sub}</span>}
         </div>
       </div>
@@ -114,6 +103,11 @@ export function EmployeeDetail() {
   const [keystrokes, setKeystrokes] = useState<KeystrokeBucket[] | null>(null);
   const [visits, setVisits] = useState<BrowserVisit[] | null>(null);
   const [shots, setShots] = useState<ScreenshotMeta[] | null>(null);
+  // Screenshots page in (newest first) within the loaded range; a full page means
+  // there may be more.
+  const [shotsRange, setShotsRange] = useState<{ from: number; to: number } | null>(null);
+  const [shotsMore, setShotsMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -148,12 +142,14 @@ export function EmployeeDetail() {
         reportActivity(id, f, to2),
         reportKeystrokes(id, f, to2),
         reportBrowser(id, f, to2),
-        reportScreenshots(id, f, to2),
+        reportScreenshots(id, f, to2, SHOTS_PAGE, 0),
       ]);
       setActivity(a);
       setKeystrokes(k.buckets);
       setVisits(b.visits);
       setShots(s.screenshots);
+      setShotsRange({ from: f, to: to2 });
+      setShotsMore(s.screenshots.length === SHOTS_PAGE);
     } catch {
       setError(t("detail.errorRange"));
     } finally {
@@ -165,6 +161,20 @@ export function EmployeeDetail() {
     load();
   }, [load]);
 
+  async function loadMoreShots() {
+    if (!id || !shots || !shotsRange || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const page = await reportScreenshots(id, shotsRange.from, shotsRange.to, SHOTS_PAGE, shots.length);
+      setShots([...shots, ...page.screenshots]);
+      setShotsMore(page.screenshots.length === SHOTS_PAGE);
+    } catch {
+      setError(t("detail.errorRange"));
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
   const today = isoDate(new Date());
 
   // Summary stats for the selected day/range, derived from the loaded data.
@@ -172,8 +182,10 @@ export function EmployeeDetail() {
   const topApp = activity?.breakdown[0]?.app_name ?? "—";
   const topAppS = activity?.breakdown[0]?.duration_s ?? 0;
   const keypresses = keystrokes?.reduce((sum, b) => sum + b.count, 0) ?? 0;
-  // Top app's share of active time (real) — shown as the "focus" chip.
+  // Top app's share of active time, shown next to its duration.
   const topShare = activeS > 0 ? Math.round((topAppS / activeS) * 100) : 0;
+
+  const period = mode === "day" ? t("detail.singleDay") : t("detail.dateRange");
 
   const name = employee?.display_name ?? terms.one;
   const isSelf = employee?.role === "owner" || (!!employee && employee.id === user?.id);
@@ -266,29 +278,25 @@ export function EmployeeDetail() {
           icon={IconClock}
           label={mode === "day" ? t("detail.summary.activeTime") : t("detail.summary.activeTimeRange")}
           value={fmtDuration(activeS)}
-          delta="12%" /* PLACEHOLDER — no period-over-period data yet (matches Dashboard) */
-          sub={mode === "day" ? t("detail.singleDay") : t("detail.dateRange")}
+          sub={period}
         />
         <StatCard
           icon={IconAppWindow}
           label={t("detail.summary.topApp")}
           value={topApp}
-          delta={`${topShare}%`}
-          sub={t("dashboard.statFocus")}
+          sub={activeS > 0 ? `${fmtDuration(topAppS)} · ${topShare}%` : period}
         />
         <StatCard
           icon={IconKeyboard}
           label={t("detail.summary.keypresses")}
           value={keypresses.toLocaleString()}
-          delta="8%" /* PLACEHOLDER pending backend trend data */
-          sub={t("dashboard.vsYesterday")}
+          sub={period}
         />
         <StatCard
           icon={IconCamera}
           label={t("detail.summary.screenshots")}
-          value={(shots?.length ?? 0).toLocaleString()}
-          delta="+4" /* PLACEHOLDER pending backend trend data */
-          sub={t("dashboard.todayLabel")}
+          value={`${(shots?.length ?? 0).toLocaleString()}${shotsMore ? "+" : ""}`}
+          sub={period}
         />
       </div>
 
@@ -323,7 +331,15 @@ export function EmployeeDetail() {
                     {tab === "keystrokes" &&
                       (keystrokes ? <KeystrokePanel buckets={keystrokes} /> : <Spinner />)}
                     {tab === "screenshots" &&
-                      (shots ? <ScreenshotGallery shots={shots} /> : <Spinner />)}
+                      (shots ? (
+                        <ScreenshotGallery
+                          shots={shots}
+                          onLoadMore={shotsMore ? loadMoreShots : undefined}
+                          loadingMore={loadingMore}
+                        />
+                      ) : (
+                        <Spinner />
+                      ))}
                   </div>
                 )}
               </>

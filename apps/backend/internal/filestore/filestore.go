@@ -50,10 +50,25 @@ func (s *Store) Write(businessID, userID string, ts int64, clientUUID string, da
 	if err := os.MkdirAll(filepath.Dir(abs), 0o755); err != nil {
 		return "", err
 	}
-	// Write to a temp file then rename for an atomic replace.
-	tmp := abs + ".tmp"
-	if err := os.WriteFile(tmp, data, 0o644); err != nil {
+	// Write to a uniquely named temp file then rename for an atomic replace. The
+	// unique name matters: two concurrent uploads of the same screenshot (a client
+	// retry while the first is still in flight) must not share one temp file, or
+	// the second rename fails with "no such file or directory".
+	f, err := os.CreateTemp(filepath.Dir(abs), filepath.Base(abs)+".*.tmp")
+	if err != nil {
 		return "", err
+	}
+	tmp := f.Name()
+	_, werr := f.Write(data)
+	if cerr := f.Close(); werr == nil {
+		werr = cerr
+	}
+	if werr == nil {
+		werr = os.Chmod(tmp, 0o644) // CreateTemp makes 0600; keep the old mode
+	}
+	if werr != nil {
+		_ = os.Remove(tmp)
+		return "", werr
 	}
 	if err := os.Rename(tmp, abs); err != nil {
 		_ = os.Remove(tmp)

@@ -15,8 +15,8 @@ const (
 )
 
 const (
-	accessTTL  = 15 * time.Minute
-	refreshTTL = 30 * 24 * time.Hour
+	accessTTL  = 30 * 24 * time.Hour  // 30 days
+	refreshTTL = 365 * 24 * time.Hour // 1 year; renewed on every refresh
 )
 
 // ErrInvalidToken is returned for any malformed, expired, or wrong-kind token.

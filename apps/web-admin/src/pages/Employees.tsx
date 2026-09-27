@@ -5,12 +5,14 @@ import {
   createBusiness,
   createEmployee,
   listBusinessEmployees,
+  reportEmployees,
 } from "../api/endpoints";
 import { ApiError, type BusinessKind, type Employee } from "../api/types";
 import { Empty, Modal, Notice, Spinner } from "../components/ui";
 import { useBusinesses } from "../useBusinesses";
 import { memberTerms, type MemberTerms } from "../terms";
 import { useAuth } from "../auth/AuthContext";
+import { memberStatus } from "./Dashboard";
 
 // ── display-only helpers (mirror the Dashboard roster look) ──────────
 const svg = (children: ReactNode) => (
@@ -30,7 +32,8 @@ const IconDices = svg(<><rect width="12" height="12" x="2" y="10" rx="2" ry="2" 
 function genTempPassword(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
   let out = "";
-  for (let i = 0; i < 10; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  const rnd = crypto.getRandomValues(new Uint32Array(10));
+  for (let i = 0; i < 10; i++) out += chars[rnd[i] % chars.length];
   return out;
 }
 
@@ -42,16 +45,6 @@ const AVATAR_PALETTE = [
 ];
 const initials = (name: string) =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("") || "?";
-
-/** PLACEHOLDER presence dot for the roster avatars. The employees list has no
- *  `last_seen`, so status is derived deterministically from the id (stable, no
- *  flicker) purely for the visual — replace once the backend exposes presence. */
-const STATUSES = ["active", "idle", "offline"] as const;
-function placeholderStatus(seed: string): (typeof STATUSES)[number] {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  return STATUSES[h % STATUSES.length];
-}
 
 export function Employees() {
   const { t } = useTranslation("dashboard");
@@ -66,6 +59,9 @@ export function Employees() {
   } = useBusinesses();
 
   const [employees, setEmployees] = useState<Employee[]>([]);
+  // Presence comes from the roster report (the members list has no last_seen);
+  // members missing from it — or a failed load — show no dot rather than a guess.
+  const [lastSeen, setLastSeen] = useState<Record<string, number | null>>({});
   const [loading, setLoading] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
 
@@ -82,6 +78,9 @@ export function Employees() {
       .then((r) => setEmployees(r.employees))
       .catch(() => setListError(t("employees.errorLoadMembers", { members: terms.lowerMany })))
       .finally(() => setLoading(false));
+    reportEmployees(id)
+      .then((r) => setLastSeen(Object.fromEntries(r.employees.map((e) => [e.id, e.last_seen]))))
+      .catch(() => setLastSeen({}));
   }
 
   useEffect(() => {
@@ -165,7 +164,7 @@ export function Employees() {
               {employees.map((e, i) => {
                 const pal = AVATAR_PALETTE[i % AVATAR_PALETTE.length];
                 const isSelf = e.id === user?.id;
-                const status = placeholderStatus(e.id); // PLACEHOLDER pending backend presence
+                const status = e.id in lastSeen ? memberStatus(lastSeen[e.id]) : null;
                 return (
                   <tr key={e.id}>
                     <td>
@@ -174,7 +173,7 @@ export function Employees() {
                           <span className="bibo-avatar__img" aria-label={e.display_name} style={{ background: pal.bg, color: pal.fg }}>
                             {initials(e.display_name)}
                           </span>
-                          <span className={`bibo-avatar__dot bibo-avatar__dot--${status}`} />
+                          {status && <span className={`bibo-avatar__dot bibo-avatar__dot--${status}`} />}
                         </span>
                         <span className="ad-name__txt">
                           {e.display_name}

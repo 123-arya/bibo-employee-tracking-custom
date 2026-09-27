@@ -25,7 +25,7 @@ func NewReportsHandler(s *store.Store, files *filestore.Store) *ReportsHandler {
 }
 
 // Roster returns the employee roster for a business the caller owns.
-// Query: business_id (required).
+// Query: business_id (required), day_start (optional, unix seconds).
 func (h *ReportsHandler) Roster(c *gin.Context) {
 	ownerID, _ := auth.UserID(c)
 	businessID := c.Query("business_id")
@@ -43,9 +43,12 @@ func (h *ReportsHandler) Roster(c *gin.Context) {
 		return
 	}
 
-	// "Today" is the current UTC day; the window is [midnight, +24h).
+	// "Today" is [day_start, +24h). Clients pass their local midnight as
+	// day_start (unix seconds) so the roster agrees with their per-employee
+	// views; without it, the current UTC day.
 	now := time.Now().UTC()
-	dayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC).Unix()
+	dayStart := parseInt64(c.Query("day_start"),
+		time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC).Unix())
 	roster, err := h.store.Roster(c.Request.Context(), businessID, dayStart, dayStart+86400)
 	if err != nil {
 		serverError(c, err)

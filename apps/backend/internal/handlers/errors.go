@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"ctracking/backend/internal/auth"
 	"ctracking/backend/internal/obs"
 
 	"github.com/getsentry/sentry-go"
@@ -10,7 +11,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// badRequest rejects the request and logs why, so 400s in the access log can be
+// traced to a reason (and a user, when authenticated).
 func badRequest(c *gin.Context, msg string) {
+	userID, _ := auth.UserID(c)
+	obs.Warn("bad request", "reason", msg, "path", c.FullPath(), "method", c.Request.Method, "user", userID)
 	c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 }
 

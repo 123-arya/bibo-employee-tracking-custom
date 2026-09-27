@@ -73,7 +73,8 @@ function suggestUsername(orgName: string, abbrev: string, n: number): string {
 function genTempPassword(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
   let out = "";
-  for (let i = 0; i < 10; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  const rnd = crypto.getRandomValues(new Uint32Array(10));
+  for (let i = 0; i < 10; i++) out += chars[rnd[i] % chars.length];
   return out;
 }
 
