@@ -38,5 +38,19 @@
     "signOut": "Cerrar sesión",
     "localTooltip": "Personal, solo local — sin cuenta",
     "setupAgainTooltip": "Inicia sesión con una cuenta de equipo o familia"
+  },
+  "messages": {
+    "whatsNewTitle": "Novedades de la versión {{version}}",
+    "gotIt": "Entendido",
+    "later": "Recordármelo más tarde",
+    "close": "Cerrar",
+    "submit": "Enviar",
+    "sending": "Enviando…",
+    "thanks": "¡Gracias por tus comentarios!",
+    "required": "Responde las preguntas obligatorias.",
+    "error": "No se pudo enviar. Inténtalo de nuevo.",
+    "npsLow": "Poco probable",
+    "npsHigh": "Muy probable",
+    "choose": "Elegir…"
   }
 }

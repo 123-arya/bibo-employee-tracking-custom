@@ -78,6 +78,13 @@ const SettingsIcon = () => (
   </RailIcon>
 );
 
+const MessagesIcon = () => (
+  <RailIcon>
+    <path d="m3 11 18-5v12L3 14v-3z" />
+    <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+  </RailIcon>
+);
+
 const ChevronsUpDownIcon = () => (
   <RailIcon>
     <path d="m7 15 5 5 5-5" />
@@ -273,6 +280,10 @@ export function AppShell() {
     { to: "/", label: t("nav.dashboard"), end: true, icon: <DashboardIcon /> },
     { to: "/employees", label: terms.many, end: false, icon: <MembersIcon /> },
     { to: "/settings", label: t("nav.settings"), end: false, icon: <SettingsIcon /> },
+    // Internal super-admin area (SUPER_ADMINS on the backend).
+    ...(user?.is_super_admin
+      ? [{ to: "/internal/messages", label: t("nav.messages"), end: false, icon: <MessagesIcon /> }]
+      : []),
   ];
 
   const activeNav = NAV.find((n) =>

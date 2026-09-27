@@ -38,5 +38,19 @@
     "signOut": "退出登录",
     "localTooltip": "个人本地模式 — 无账户",
     "setupAgainTooltip": "使用团队或家庭账户登录"
+  },
+  "messages": {
+    "whatsNewTitle": "{{version}} 版本新功能",
+    "gotIt": "知道了",
+    "later": "稍后提醒我",
+    "close": "关闭",
+    "submit": "提交",
+    "sending": "正在发送…",
+    "thanks": "感谢您的反馈！",
+    "required": "请回答必填问题。",
+    "error": "发送失败，请重试。",
+    "npsLow": "不太可能",
+    "npsHigh": "非常可能",
+    "choose": "请选择…"
   }
 }

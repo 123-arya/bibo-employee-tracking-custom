@@ -16,15 +16,16 @@ type Config struct {
 	DatabaseURL    string
 	JWTSecret      string
 	StorageDir     string
-	AllowedOrigin  string // web-admin origin for CORS
-	StaticDir      string // dir of the built web-admin SPA to serve; "" = disabled
-	SentryDSN      string // Sentry DSN; "" = error reporting disabled
-	Environment    string // deploy env label sent to Sentry (local/staging/production)
-	LogDir         string // dir for the on-disk log file (backend.log); "" = stdout only
-	LogMaxSizeMB   int    // rotate the log file once it exceeds this size
-	LogMaxBackups  int    // number of rotated files to keep
-	LogMaxAgeDays  int    // delete rotated files older than this many days
-	KeepaliveToken string // secret for the CPU keep-alive endpoint; "" = disabled
+	AllowedOrigin  string   // web-admin origin for CORS
+	StaticDir      string   // dir of the built web-admin SPA to serve; "" = disabled
+	SentryDSN      string   // Sentry DSN; "" = error reporting disabled
+	Environment    string   // deploy env label sent to Sentry (local/staging/production)
+	LogDir         string   // dir for the on-disk log file (backend.log); "" = stdout only
+	LogMaxSizeMB   int      // rotate the log file once it exceeds this size
+	LogMaxBackups  int      // number of rotated files to keep
+	LogMaxAgeDays  int      // delete rotated files older than this many days
+	KeepaliveToken string   // secret for the CPU keep-alive endpoint; "" = disabled
+	SuperAdmins    []string // usernames/emails allowed into the super-admin area (SUPER_ADMINS, comma-separated)
 }
 
 // Load reads .env (if present) then the process environment. It returns an error
@@ -51,6 +52,7 @@ func Load() (*Config, error) {
 		LogMaxBackups:  getenvInt("LOG_MAX_BACKUPS", 5),
 		LogMaxAgeDays:  getenvInt("LOG_MAX_AGE_DAYS", 30),
 		KeepaliveToken: os.Getenv("KEEPALIVE_TOKEN"),
+		SuperAdmins:    splitList(os.Getenv("SUPER_ADMINS")),
 	}
 
 	var missing []string
@@ -80,4 +82,15 @@ func getenvInt(key string, fallback int) int {
 		}
 	}
 	return fallback
+}
+
+// splitList parses a comma-separated env value, dropping blanks.
+func splitList(v string) []string {
+	var out []string
+	for _, s := range strings.Split(v, ",") {
+		if s = strings.TrimSpace(s); s != "" {
+			out = append(out, s)
+		}
+	}
+	return out
 }

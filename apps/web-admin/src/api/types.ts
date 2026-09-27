@@ -15,6 +15,8 @@ export interface User {
   username?: string;
   display_name: string;
   account_type: AccountType;
+  /** Listed in the backend's SUPER_ADMINS — unlocks the internal Messages area. */
+  is_super_admin?: boolean;
 }
 
 export interface Tokens {
@@ -149,4 +151,82 @@ export class ApiError extends Error {
     this.status = status;
     this.body = body;
   }
+}
+
+// ---------- in-app messages (super admin, ticket 145) ----------
+export type MessageKind = "announcement" | "survey" | "promo";
+export type MessageFieldType = "text" | "textarea" | "radio" | "checkbox" | "select" | "rating" | "nps";
+export type MessageEvent = "delivered" | "shown" | "dismissed" | "later" | "cta" | "submitted";
+
+export interface MessageContent {
+  title: string;
+  body: string;
+  image?: string;
+  cta_label?: string;
+  cta_url?: string;
+}
+export interface MessageFieldDef {
+  id: string;
+  type: MessageFieldType;
+  required: boolean;
+  label: Record<string, string>;
+  options?: { value: string; label: Record<string, string> }[];
+}
+export interface MessageAudience {
+  roles?: string[];
+  kinds?: string[];
+  platforms?: string[];
+  locales?: string[];
+  min_version?: string;
+  max_version?: string;
+}
+export interface MessageDef {
+  id: string;
+  kind: MessageKind;
+  active: boolean;
+  start?: string | null;
+  end?: string | null;
+  audience: MessageAudience;
+  repeat_days: number;
+  anonymous?: boolean;
+  content: Record<string, MessageContent>;
+  fields?: MessageFieldDef[];
+  created_at?: string;
+  updated_at?: string;
+  /** Survey answers so far — once > 0 the questions can only be reworded. */
+  response_count?: number;
+}
+export type EventCounts = Partial<Record<MessageEvent, { total: number; unique: number }>>;
+export interface AdminMessageRow extends MessageDef {
+  stats: EventCounts;
+}
+export interface MessageFieldSummary {
+  id: string;
+  type: MessageFieldType;
+  label: string;
+  answered: number;
+  options?: { value: string; label: string; count: number }[];
+  scale?: Record<string, number>;
+  average?: number;
+  nps?: number;
+  texts?: string[];
+}
+export interface MessageResponseRow {
+  answers: Record<string, string | string[] | number>;
+  user_id: string | null;
+  user_name: string | null; // named surveys only
+  user_login: string | null;
+  app_version: string;
+  platform: string;
+  locale: string;
+  created_at: string;
+}
+export interface MessageStats {
+  id: string;
+  totals: EventCounts;
+  daily: { day: string; event: MessageEvent; unique: number }[];
+  breakdown: { dim: "locale" | "platform" | "version" | "role"; value: string; event: MessageEvent; unique: number }[];
+  message?: MessageDef;
+  responses?: MessageResponseRow[];
+  summary?: MessageFieldSummary[];
 }

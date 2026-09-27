@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { subscribeLogout } from "../api/client";
+import { getMe } from "../api/endpoints";
 import { tokenStore } from "../api/tokenStore";
 import { isDemo } from "../api/demo";
 import type { User } from "../api/types";
@@ -35,6 +36,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setIsAuthed(false);
     });
+  }, []);
+
+  // Refresh the stored profile once per load (e.g. to pick up is_super_admin for a
+  // session that predates it). Failures keep the stored copy.
+  useEffect(() => {
+    if (isDemo() || !tokenStore.isAuthed()) return;
+    getMe()
+      .then((u) => {
+        tokenStore.setUser(u);
+        setUser(u);
+      })
+      .catch(() => {});
   }, []);
 
   // Attach (or clear) the signed-in user on every Sentry event. Covers login,

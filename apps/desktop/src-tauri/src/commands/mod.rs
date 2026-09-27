@@ -577,6 +577,60 @@ pub async fn admin_create_employee(
         .await
 }
 
+/// In-app messages (ticket 145) for the signed-in user, resolved to `locale`.
+/// Logged out / personal mode ⇒ none (only the bundled "What's new" applies then).
+#[tauri::command]
+pub async fn messages_fetch(
+    platform: String,
+    version: String,
+    locale: String,
+    auth: State<'_, Arc<AuthState>>,
+) -> Result<serde_json::Value, String> {
+    if auth.session().is_none() {
+        return Ok(serde_json::json!({ "messages": [] }));
+    }
+    let client = BackendClient::new(backend_url(), auth.inner().clone());
+    client.fetch_messages(&platform, &version, &locale).await
+}
+
+/// Submit a survey answer for in-app message `id`.
+#[tauri::command]
+pub async fn message_respond(
+    id: String,
+    answers: serde_json::Value,
+    platform: String,
+    version: String,
+    locale: String,
+    auth: State<'_, Arc<AuthState>>,
+) -> Result<(), String> {
+    let client = BackendClient::new(backend_url(), auth.inner().clone());
+    let body = serde_json::json!({
+        "answers": answers, "platform": platform, "version": version, "locale": locale,
+    });
+    client.respond_message(&id, &body).await
+}
+
+/// Report a popup analytics event (shown / dismissed / later / cta / submitted).
+/// No-op when logged out; best effort otherwise.
+#[tauri::command]
+pub async fn message_event(
+    id: String,
+    event: String,
+    platform: String,
+    version: String,
+    locale: String,
+    auth: State<'_, Arc<AuthState>>,
+) -> Result<(), String> {
+    if auth.session().is_none() {
+        return Ok(());
+    }
+    let client = BackendClient::new(backend_url(), auth.inner().clone());
+    let body = serde_json::json!({
+        "event": event, "platform": platform, "version": version, "locale": locale,
+    });
+    client.message_event(&id, &body).await
+}
+
 /// `GET /v1/public/businesses` — the login picker's list of companies/owners.
 #[tauri::command]
 pub async fn list_businesses(
