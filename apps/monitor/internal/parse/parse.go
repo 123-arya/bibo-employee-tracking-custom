@@ -1,10 +1,9 @@
 // Package parse extracts per-request events (status, latency, method, path)
-// and log levels from the service log lines we actually ship:
+// from the service log lines we actually ship:
 //   - gin default access lines (bibotracking):
 //     [GIN] 2026/07/05 - 16:30:21 | 200 |   83.549697ms |   171.251.232.5 | POST     "/v1/sync/screenshots"
 //   - slog logfmt http lines (biboreward):
 //     time=2026-07-05T16:30:38.203Z level=INFO msg=http method=GET path=/healthz status=200 dur=5.32µs
-//   - slog JSON lines (bibotracking obs package) — level only, no request data.
 package parse
 
 import (
@@ -76,25 +75,4 @@ func stripQuery(p string) string {
 		return p[:i]
 	}
 	return p
-}
-
-// Level classifies a log line as ERROR, WARN or INFO.
-func Level(line string) string {
-	if r, ok := ParseRequest(line); ok {
-		if r.Status >= 500 {
-			return "ERROR"
-		}
-		if r.Status >= 400 {
-			return "WARN"
-		}
-		return "INFO"
-	}
-	switch {
-	case strings.Contains(line, `"level":"ERROR"`), strings.Contains(line, "level=ERROR"),
-		strings.Contains(line, " ERR "), strings.Contains(line, "panic:"):
-		return "ERROR"
-	case strings.Contains(line, `"level":"WARN"`), strings.Contains(line, "level=WARN"):
-		return "WARN"
-	}
-	return "INFO"
 }
