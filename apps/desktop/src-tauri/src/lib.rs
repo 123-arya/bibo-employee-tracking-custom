@@ -13,7 +13,7 @@ mod tray;
 mod trackers;
 
 use std::sync::Arc;
-use tauri::{Emitter, Manager};
+use tauri::Manager;
 
 /// Current unix time in seconds. Shared helper for sync bookkeeping.
 pub fn now_unix() -> i64 {
@@ -95,17 +95,10 @@ pub fn run() {
             commands::request_accessibility,
             commands::capture_now,
             commands::browser_link,
+            commands::list_businesses,
             commands::signup_url,
-            commands::admin_url,
-            commands::admin_businesses,
-            commands::admin_roster,
-            commands::admin_employee_activity,
-            commands::admin_employee_keystrokes,
-            commands::admin_employee_browser,
-            commands::admin_employee_screenshots,
-            commands::admin_screenshot_data,
-            commands::admin_create_business,
-            commands::admin_create_employee,
+            commands::open_erpnext,
+	    commands::hide_main_window,
             commands::login,
             commands::logout,
             commands::current_session,
@@ -113,9 +106,6 @@ pub fn run() {
             commands::apply_org_policy,
             commands::capture_policy,
             commands::privacy_apps,
-            commands::messages_fetch,
-            commands::message_respond,
-            commands::message_event,
         ])
         .setup(|app| {
             // Open the local SQLite DB under the app data dir.
@@ -168,10 +158,6 @@ pub fn run() {
                         let _ = w.hide();
                     }
                     tauri::WindowEvent::Focused(true) => {
-                        // Tell the UI the window came to the front (launch, Dock/tray
-                        // "Open", app switch) — the DOM focus event doesn't fire here.
-                        // Used by the in-app message popup (ticket 145).
-                        let _ = w.emit("app-focused", ());
                         use std::sync::atomic::Ordering;
                         let now = now_unix();
                         if now - last_active.load(Ordering::Relaxed) >= 30 {

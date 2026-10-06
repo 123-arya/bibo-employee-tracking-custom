@@ -1,8 +1,3 @@
-//! Tauri commands — the bridge the web UI calls into.
-//!
-//! Queries over stored data (activity, screenshots, browser visits), permission
-//! status, settings, pause/resume, and export. Filled in across later tasks.
-
 use std::collections::HashMap;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -47,11 +42,20 @@ pub fn track_event(
     session: State<crate::analytics::AnalyticsSession>,
 ) {
     use tauri::Manager;
+
     let locale = settings.current.lock().unwrap().locale.clone();
+
     let Ok(data_dir) = app.path().app_data_dir() else {
         return;
     };
-    crate::analytics::track_event(name, locale, session.0.clone(), data_dir.join("analytics-queue"), props);
+
+    crate::analytics::track_event(
+        name,
+        locale,
+        session.0.clone(),
+        data_dir.join("analytics-queue"),
+        props,
+    );
 }
 
 #[tauri::command]
@@ -64,7 +68,9 @@ pub fn is_paused(control: State<Arc<TrackerControl>>) -> bool {
 pub fn tracking_state(control: State<Arc<TrackerControl>>) -> String {
     if control.paused.load(Ordering::Relaxed) {
         "paused"
-    } else if platform::idle_seconds() >= control.idle_threshold_s.load(Ordering::Relaxed) as f64 {
+    } else if platform::idle_seconds()
+        >= control.idle_threshold_s.load(Ordering::Relaxed) as f64
+    {
         "idle"
     } else {
         "tracking"
@@ -90,7 +96,9 @@ pub fn permissions_status(
 /// (`accessibility` | `input_monitoring` | `screen_recording`).
 #[tauri::command]
 pub fn open_permission_settings(which: String) -> Result<(), String> {
-    let p = Permission::from_key(&which).ok_or_else(|| format!("unknown permission: {which}"))?;
+    let p =
+        Permission::from_key(&which).ok_or_else(|| format!("unknown permission: {which}"))?;
+
     platform::open_settings(p);
     Ok(())
 }
@@ -123,7 +131,7 @@ pub fn get_settings(
 }
 
 /// Persist the chosen UI locale and re-translate the native tray to match. Called
-/// by the in-app language switcher so the menu-bar item follows the app's language.
+/// by the in-app language switcher so the menu-bar item follows the user's language.
 #[tauri::command]
 pub fn set_locale(
     locale: String,
@@ -135,6 +143,7 @@ pub fn set_locale(
         cur.locale = locale;
         crate::settings::save(&state.path, &cur).map_err(err)?;
     }
+
     crate::tray::relabel(&app);
     Ok(())
 }
@@ -147,29 +156,30 @@ pub fn set_settings(
     state: State<Arc<crate::settings::SettingsState>>,
     control: State<Arc<TrackerControl>>,
 ) -> Result<(), String> {
-    // The UI's settings payload doesn't carry `locale` (it's owned by `set_locale`),
-    // so preserve the persisted value instead of letting serde's default reset it.
     value.locale = state.current.lock().unwrap().locale.clone();
-    // When the org controls capture settings, ignore changes to those fields —
-    // the rest (theme, dock, etc.) still apply.
+
     if state.managed.lock().unwrap().locked() {
         let cur = state.current.lock().unwrap().clone();
+
         value.screenshot_interval_s = cur.screenshot_interval_s;
         value.idle_threshold_s = cur.idle_threshold_s;
         value.screenshot_retention_days = cur.screenshot_retention_days;
         value.screenshot_mode = cur.screenshot_mode;
         value.screenshot_skip_apps = cur.screenshot_skip_apps;
     }
+
     crate::settings::apply(&value, &control);
     crate::apply_dock_policy(&app, value.hide_dock);
     crate::settings::save(&state.path, &value).map_err(err)?;
+
     *state.current.lock().unwrap() = value;
+
     Ok(())
 }
 
 /// Fetch the org capture policy and, if it's locked (managed and override not
 /// allowed), apply it to the live settings + trackers. Returns the managed status so
-/// the UI can lock the corresponding controls. Standalone users keep local defaults.
+/// the UI can lock/unlock the corresponding controls. Standalone users keep local defaults.
 #[tauri::command]
 pub async fn apply_org_policy(
     settings: State<'_, Arc<crate::settings::SettingsState>>,
@@ -184,30 +194,37 @@ pub async fn apply_org_policy(
         allow_employee_override: policy.allow_employee_override,
         family: policy.kind.as_deref() == Some("family"),
     };
+
     *settings.managed.lock().unwrap() = status;
 
     if status.locked() {
         let mut s = settings.current.lock().unwrap().clone();
+
         if let Some(v) = policy.screenshot_interval_s {
             s.screenshot_interval_s = v;
         }
+
         if let Some(v) = policy.idle_threshold_s {
             s.idle_threshold_s = v;
         }
-        // None retention = "keep forever" on the backend; leave the local value.
+
         if let Some(v) = policy.screenshot_retention_days {
             s.screenshot_retention_days = v;
         }
+
         if let Some(v) = policy.screenshot_mode {
             s.screenshot_mode = v;
         }
+
         if let Some(v) = policy.screenshot_skip_apps {
             s.screenshot_skip_apps = v;
         }
+
         crate::settings::apply(&s, &control);
         let _ = crate::settings::save(&settings.path, &s);
         *settings.current.lock().unwrap() = s;
     }
+
     Ok(status)
 }
 
@@ -250,11 +267,13 @@ pub fn capture_now(
     control: State<Arc<TrackerControl>>,
 ) -> Result<usize, String> {
     use tauri::Manager;
+
     let dir = app
         .path()
         .app_data_dir()
         .map_err(err)?
         .join("screenshots");
+
     Ok(crate::trackers::capture_once(&db, &dir, &control))
 }
 
@@ -295,9 +314,11 @@ pub fn dashboard_data(
     let mut by_app_map: HashMap<String, i64> = HashMap::new();
     let mut total_active_s = 0i64;
     let mut timeline = Vec::with_capacity(samples.len());
+
     for s in &samples {
         *by_app_map.entry(s.app_name.clone()).or_insert(0) += s.duration_s;
         total_active_s += s.duration_s;
+
         timeline.push(Seg {
             ts: s.ts,
             app_name: s.app_name.clone(),
@@ -309,7 +330,9 @@ pub fn dashboard_data(
         .into_iter()
         .map(|(app_name, total_s)| AppTotal { app_name, total_s })
         .collect();
+
     by_app.sort_by(|a, b| b.total_s.cmp(&a.total_s));
+
     let top_app = by_app.first().map(|a| a.app_name.clone());
 
     let keypresses = db
@@ -318,7 +341,11 @@ pub fn dashboard_data(
         .iter()
         .map(|(_, c)| *c)
         .sum();
-    let screenshots = db.screenshots_between(from_ts, to_ts).map_err(err)?.len() as i64;
+
+    let screenshots = db
+        .screenshots_between(from_ts, to_ts)
+        .map_err(err)?
+        .len() as i64;
 
     Ok(DashboardData {
         total_active_s,
@@ -338,7 +365,7 @@ pub fn screenshot_list(
     db: State<Arc<Db>>,
 ) -> Result<Vec<crate::storage::Screenshot>, String> {
     let mut rows = db.screenshots_between(from_ts, to_ts).map_err(err)?;
-    rows.reverse(); // newest first
+    rows.reverse();
     Ok(rows)
 }
 
@@ -390,17 +417,21 @@ pub fn export_json_to_dir(
     to_ts: i64,
 ) -> Result<ExportSummary, String> {
     use std::path::Path;
+
     let activity = db.activity_between(from_ts, to_ts).map_err(err)?;
+
     let keystrokes: Vec<KeystrokeRow> = db
         .keystrokes_between(from_ts, to_ts)
         .map_err(err)?
         .into_iter()
         .map(|(ts_bucket, count)| KeystrokeRow { ts_bucket, count })
         .collect();
+
     let screenshots = db.screenshots_between(from_ts, to_ts).map_err(err)?;
     let visits = db.browser_visits_between(from_ts, to_ts).map_err(err)?;
 
     let rows = activity.len() + keystrokes.len() + screenshots.len() + visits.len();
+
     let doc = serde_json::json!({
         "activity_sample": serde_json::to_value(&activity).map_err(err)?,
         "keystroke_bucket": serde_json::to_value(&keystrokes).map_err(err)?,
@@ -409,7 +440,12 @@ pub fn export_json_to_dir(
     });
 
     let path = Path::new(dir).join("employeetrack_export.json");
-    std::fs::write(&path, serde_json::to_string_pretty(&doc).map_err(err)?).map_err(err)?;
+
+    std::fs::write(
+        &path,
+        serde_json::to_string_pretty(&doc).map_err(err)?,
+    )
+    .map_err(err)?;
 
     Ok(ExportSummary {
         dir: dir.to_string(),
@@ -427,11 +463,72 @@ fn err<E: std::fmt::Display>(e: E) -> String {
 // ---------- auth / session (task 51) ----------
 
 use crate::sync::auth::{AuthState, Session};
-use crate::sync::client::BackendClient;
+use crate::sync::client::{BackendClient, OwnerBusiness};
 
 /// The backend base URL (compile-time default; env override for dev).
 fn backend_url() -> String {
     crate::settings::backend_base_url()
+}
+
+/// Open ERPNext inside the main Bibo window.
+#[tauri::command]
+pub fn open_erpnext(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri::{
+        LogicalPosition,
+        LogicalSize,
+        Manager,
+        WebviewBuilder,
+        WebviewUrl,
+    };
+
+    // IMPORTANT:
+    // get_window() returns tauri::Window.
+    // Window supports add_child().
+    let window = app
+        .get_window("main")
+        .ok_or_else(|| "Bibo main window not found".to_string())?;
+
+    let url = "http://erpnext.localhost:8000/app/home"
+        .parse()
+        .map_err(|e| format!("Invalid ERPNext URL: {e}"))?;
+
+//    let webview = WebviewBuilder::new(
+//        "erpnext",
+//        WebviewUrl::External(url),
+//    );
+
+//    window
+//        .add_child(
+//            webview,
+//            LogicalPosition::new(0.0, 0.0),
+//            LogicalSize::new(1920.0, 1080.0),
+//        )
+//        .map_err(|e| format!("Failed to embed ERPNext: {e}"))?;
+    let webviews = window.webviews();
+
+    let main_webview = webviews
+        .into_iter()
+        .next()
+        .ok_or_else(|| "Main Bibo webview not found".to_string())?;
+
+    main_webview
+        .navigate(url)
+        .map_err(|e| format!("Failed to navigate to ERPNext: {e}"))?;
+
+    println!("ERPNext embedded inside Bibo.");
+
+    Ok(())
+}
+
+/// Hide the main Bibo window while keeping the Tauri process/tray alive.
+#[tauri::command]
+pub fn hide_main_window(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+
+    app.get_webview_window("main")
+        .ok_or_else(|| "Main window not found".to_string())?
+        .hide()
+        .map_err(|e| e.to_string())
 }
 
 /// The web signup wizard URL, opened in the system browser from the desktop
@@ -441,194 +538,12 @@ pub fn signup_url() -> String {
     format!("{}/admin/signup", backend_url().trim_end_matches('/'))
 }
 
-/// The web admin dashboard URL. Opened in the system browser from the native
-/// Admin section (workspace creation, employee detail). Served under `/admin`.
+/// `GET /v1/public/businesses` — the login picker's list of companies/owners.
 #[tauri::command]
-pub fn admin_url() -> String {
-    format!("{}/admin/", backend_url().trim_end_matches('/'))
-}
-
-/// Workspaces owned by the signed-in user (`GET /v1/businesses/mine`). Uses the
-/// tracker's own session token; an empty list means the user isn't an owner, so
-/// the Admin section shows the "no access" state.
-#[tauri::command]
-pub async fn admin_businesses(
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<Vec<crate::sync::client::OwnerBusiness>, String> {
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
+pub async fn list_businesses(
+    client: tauri::State<'_, BackendClient>,
+) -> Result<Vec<OwnerBusiness>, String> {
     client.owner_businesses().await
-}
-
-/// Today's employee roster for an owned workspace (`GET /v1/reports/employees`).
-/// `day_start` is the viewer's local midnight (unix seconds), so "today" matches
-/// the per-employee detail views.
-#[tauri::command]
-pub async fn admin_roster(
-    business_id: String,
-    day_start: i64,
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<Vec<crate::sync::client::RosterEntry>, String> {
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    client.owner_roster(&business_id, day_start).await
-}
-
-// ---------- admin: per-employee detail reports ----------
-// Owner-only drill-down for the native EmployeeDetail screen. All scoped
-// server-side to businesses the caller owns; token comes from AuthState.
-
-/// Timeline + per-app breakdown for one employee in `[from, to)` (unix seconds).
-#[tauri::command]
-pub async fn admin_employee_activity(
-    employee_id: String,
-    from: i64,
-    to: i64,
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<crate::sync::client::EmployeeActivity, String> {
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    client.owner_employee_activity(&employee_id, from, to).await
-}
-
-/// Keystroke count buckets for one employee in `[from, to)` (counts only).
-#[tauri::command]
-pub async fn admin_employee_keystrokes(
-    employee_id: String,
-    from: i64,
-    to: i64,
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<Vec<crate::sync::client::KeystrokeBucketRow>, String> {
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    client.owner_employee_keystrokes(&employee_id, from, to).await
-}
-
-/// Browser page visits for one employee in `[from, to)`.
-#[tauri::command]
-pub async fn admin_employee_browser(
-    employee_id: String,
-    from: i64,
-    to: i64,
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<Vec<crate::sync::client::BrowserVisitRow>, String> {
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    client.owner_employee_browser(&employee_id, from, to).await
-}
-
-/// Paginated screenshot metadata for one employee in `[from, to)` (unix seconds),
-/// newest first from the backend.
-#[tauri::command]
-pub async fn admin_employee_screenshots(
-    employee_id: String,
-    from: i64,
-    to: i64,
-    limit: u32,
-    offset: u32,
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<crate::sync::client::ScreenshotPage, String> {
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    client
-        .owner_employee_screenshots(&employee_id, from, to, limit, offset)
-        .await
-}
-
-/// One screenshot as a base64 `data:` URL, fetched with the owner's bearer token
-/// (the image endpoint needs auth, so a plain `<img src>` can't reach it).
-#[tauri::command]
-pub async fn admin_screenshot_data(
-    client_uuid: String,
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<String, String> {
-    use base64::Engine;
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    let (bytes, content_type) = client.owner_screenshot_bytes(&client_uuid).await?;
-    let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
-    Ok(format!("data:{content_type};base64,{b64}"))
-}
-
-/// Create a new workspace (team/family) owned by the caller. Kind is decided
-/// server-side from the owner's account type.
-#[tauri::command]
-pub async fn admin_create_business(
-    name: String,
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<crate::sync::client::OwnerBusiness, String> {
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    client.owner_create_business(&name).await
-}
-
-/// Create (pre-provision) a member in an owned workspace. Exactly one of
-/// `email` / `username` is expected; the UI picks based on the entered login.
-#[tauri::command]
-pub async fn admin_create_employee(
-    business_id: String,
-    display_name: String,
-    email: Option<String>,
-    username: Option<String>,
-    password: String,
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<crate::sync::client::CreatedEmployee, String> {
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    client
-        .owner_create_employee(
-            &business_id,
-            &display_name,
-            email.as_deref(),
-            username.as_deref(),
-            &password,
-        )
-        .await
-}
-
-/// In-app messages (ticket 145) for the signed-in user, resolved to `locale`.
-/// Logged out / personal mode ⇒ none (only the bundled "What's new" applies then).
-#[tauri::command]
-pub async fn messages_fetch(
-    platform: String,
-    version: String,
-    locale: String,
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<serde_json::Value, String> {
-    if auth.session().is_none() {
-        return Ok(serde_json::json!({ "messages": [] }));
-    }
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    client.fetch_messages(&platform, &version, &locale).await
-}
-
-/// Submit a survey answer for in-app message `id`.
-#[tauri::command]
-pub async fn message_respond(
-    id: String,
-    answers: serde_json::Value,
-    platform: String,
-    version: String,
-    locale: String,
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<(), String> {
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    let body = serde_json::json!({
-        "answers": answers, "platform": platform, "version": version, "locale": locale,
-    });
-    client.respond_message(&id, &body).await
-}
-
-/// Report a popup analytics event (shown / dismissed / later / cta / submitted).
-/// No-op when logged out; best effort otherwise.
-#[tauri::command]
-pub async fn message_event(
-    id: String,
-    event: String,
-    platform: String,
-    version: String,
-    locale: String,
-    auth: State<'_, Arc<AuthState>>,
-) -> Result<(), String> {
-    if auth.session().is_none() {
-        return Ok(());
-    }
-    let client = BackendClient::new(backend_url(), auth.inner().clone());
-    let body = serde_json::json!({
-        "event": event, "platform": platform, "version": version, "locale": locale,
-    });
-    client.message_event(&id, &body).await
 }
 
 /// Log in and persist the session to disk. Wrong credentials surface a clear error
@@ -641,10 +556,13 @@ pub async fn login(
     auth: State<'_, Arc<AuthState>>,
 ) -> Result<Session, String> {
     let client = BackendClient::new(backend_url(), auth.inner().clone());
+
     let session = client
         .login(&email, &password, business_id.as_deref())
         .await?;
+
     auth.store(session.clone())?;
+
     Ok(session)
 }
 
@@ -671,8 +589,11 @@ pub struct SyncStatusView {
 
 /// Last sync time, pending count, and last error for the UI / menu bar.
 #[tauri::command]
-pub fn sync_status(status: State<Arc<crate::sync::worker::SyncStatus>>) -> SyncStatusView {
+pub fn sync_status(
+    status: State<Arc<crate::sync::worker::SyncStatus>>,
+) -> SyncStatusView {
     use std::sync::atomic::Ordering;
+
     SyncStatusView {
         last_sync_ts: status.last_sync_ts.load(Ordering::Relaxed),
         pending: status.pending.load(Ordering::Relaxed),
@@ -718,15 +639,26 @@ pub fn export_to_dir(
     to_ts: i64,
 ) -> Result<ExportSummary, String> {
     use std::path::Path;
+
     let base = Path::new(dir);
     let mut files = Vec::new();
 
     // activity_sample
     {
         let rows = db.activity_between(from_ts, to_ts).map_err(err)?;
-        let mut w = csv::Writer::from_path(base.join("activity_sample.csv")).map_err(err)?;
-        w.write_record(["ts", "app_name", "window_title", "pid", "duration_s"])
-            .map_err(err)?;
+
+        let mut w =
+            csv::Writer::from_path(base.join("activity_sample.csv")).map_err(err)?;
+
+        w.write_record([
+            "ts",
+            "app_name",
+            "window_title",
+            "pid",
+            "duration_s",
+        ])
+        .map_err(err)?;
+
         for r in &rows {
             w.write_record([
                 r.ts.to_string(),
@@ -737,7 +669,9 @@ pub fn export_to_dir(
             ])
             .map_err(err)?;
         }
+
         w.flush().map_err(err)?;
+
         files.push(FileResult {
             name: "activity_sample.csv".into(),
             rows: rows.len(),
@@ -747,13 +681,22 @@ pub fn export_to_dir(
     // keystroke_bucket
     {
         let rows = db.keystrokes_between(from_ts, to_ts).map_err(err)?;
-        let mut w = csv::Writer::from_path(base.join("keystroke_bucket.csv")).map_err(err)?;
+
+        let mut w =
+            csv::Writer::from_path(base.join("keystroke_bucket.csv")).map_err(err)?;
+
         w.write_record(["ts_bucket", "count"]).map_err(err)?;
+
         for (ts_bucket, count) in &rows {
-            w.write_record([ts_bucket.to_string(), count.to_string()])
-                .map_err(err)?;
+            w.write_record([
+                ts_bucket.to_string(),
+                count.to_string(),
+            ])
+            .map_err(err)?;
         }
+
         w.flush().map_err(err)?;
+
         files.push(FileResult {
             name: "keystroke_bucket.csv".into(),
             rows: rows.len(),
@@ -763,9 +706,19 @@ pub fn export_to_dir(
     // screenshot
     {
         let rows = db.screenshots_between(from_ts, to_ts).map_err(err)?;
-        let mut w = csv::Writer::from_path(base.join("screenshot.csv")).map_err(err)?;
-        w.write_record(["ts", "file_path", "display_id", "width", "height"])
-            .map_err(err)?;
+
+        let mut w =
+            csv::Writer::from_path(base.join("screenshot.csv")).map_err(err)?;
+
+        w.write_record([
+            "ts",
+            "file_path",
+            "display_id",
+            "width",
+            "height",
+        ])
+        .map_err(err)?;
+
         for r in &rows {
             w.write_record([
                 r.ts.to_string(),
@@ -776,7 +729,9 @@ pub fn export_to_dir(
             ])
             .map_err(err)?;
         }
+
         w.flush().map_err(err)?;
+
         files.push(FileResult {
             name: "screenshot.csv".into(),
             rows: rows.len(),
@@ -786,9 +741,19 @@ pub fn export_to_dir(
     // browser_visit
     {
         let rows = db.browser_visits_between(from_ts, to_ts).map_err(err)?;
-        let mut w = csv::Writer::from_path(base.join("browser_visit.csv")).map_err(err)?;
-        w.write_record(["ts", "url", "page_title", "browser", "duration_s"])
-            .map_err(err)?;
+
+        let mut w =
+            csv::Writer::from_path(base.join("browser_visit.csv")).map_err(err)?;
+
+        w.write_record([
+            "ts",
+            "url",
+            "page_title",
+            "browser",
+            "duration_s",
+        ])
+        .map_err(err)?;
+
         for r in &rows {
             w.write_record([
                 r.ts.to_string(),
@@ -799,7 +764,9 @@ pub fn export_to_dir(
             ])
             .map_err(err)?;
         }
+
         w.flush().map_err(err)?;
+
         files.push(FileResult {
             name: "browser_visit.csv".into(),
             rows: rows.len(),
@@ -820,8 +787,9 @@ mod tests {
     #[test]
     fn export_quotes_tricky_fields() {
         let db = Db::open_in_memory().unwrap();
-        // A window title with comma, quote, newline, and emoji.
+
         let nasty = "a, \"b\"\nc 🚀";
+
         db.insert_activity_sample(&ActivitySample {
             ts: 100,
             app_name: "Code".into(),
@@ -831,16 +799,25 @@ mod tests {
         })
         .unwrap();
 
-        let dir = std::env::temp_dir().join(format!("ctracking_export_test_{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!(
+            "ctracking_export_test_{}",
+            std::process::id()
+        ));
+
         std::fs::create_dir_all(&dir).unwrap();
-        let summary = export_to_dir(&db, dir.to_str().unwrap(), 0, i64::MAX).unwrap();
+
+        let summary =
+            export_to_dir(&db, dir.to_str().unwrap(), 0, i64::MAX).unwrap();
+
         assert_eq!(summary.files.len(), 4);
 
-        // Read activity_sample.csv back with a CSV parser — escaping must round-trip.
-        let mut rdr = csv::Reader::from_path(dir.join("activity_sample.csv")).unwrap();
+        let mut rdr =
+            csv::Reader::from_path(dir.join("activity_sample.csv")).unwrap();
+
         let rec = rdr.records().next().unwrap().unwrap();
+
         assert_eq!(&rec[1], "Code");
-        assert_eq!(&rec[2], nasty); // exact field preserved through quoting
+        assert_eq!(&rec[2], nasty);
         assert_eq!(&rec[4], "12");
 
         std::fs::remove_dir_all(&dir).ok();
@@ -849,6 +826,7 @@ mod tests {
     #[test]
     fn json_export_is_valid_and_complete() {
         let db = Db::open_in_memory().unwrap();
+
         db.insert_activity_sample(&ActivitySample {
             ts: 100,
             app_name: "Code".into(),
@@ -857,19 +835,47 @@ mod tests {
             duration_s: 5,
         })
         .unwrap();
+
         db.add_keystrokes(60, 9).unwrap();
 
-        let dir =
-            std::env::temp_dir().join(format!("ctracking_json_test_{}", std::process::id()));
-        std::fs::create_dir_all(&dir).unwrap();
-        export_json_to_dir(&db, dir.to_str().unwrap(), 0, i64::MAX).unwrap();
+        let dir = std::env::temp_dir().join(format!(
+            "ctracking_json_test_{}",
+            std::process::id()
+        ));
 
-        let text = std::fs::read_to_string(dir.join("employeetrack_export.json")).unwrap();
-        let v: serde_json::Value = serde_json::from_str(&text).unwrap();
-        assert_eq!(v["activity_sample"][0]["app_name"], "Code");
-        assert_eq!(v["keystroke_bucket"][0]["count"], 9);
-        assert!(v["screenshot"].is_array() && v["browser_visit"].is_array());
+        std::fs::create_dir_all(&dir).unwrap();
+
+        export_json_to_dir(
+            &db,
+            dir.to_str().unwrap(),
+            0,
+            i64::MAX,
+        )
+        .unwrap();
+
+        let text = std::fs::read_to_string(
+            dir.join("employeetrack_export.json"),
+        )
+        .unwrap();
+
+        let v: serde_json::Value =
+            serde_json::from_str(&text).unwrap();
+
+        assert_eq!(
+            v["activity_sample"][0]["app_name"],
+            "Code"
+        );
+
+        assert_eq!(
+            v["keystroke_bucket"][0]["count"],
+            9
+        );
+
+        assert!(
+            v["screenshot"].is_array()
+                && v["browser_visit"].is_array()
+        );
 
         std::fs::remove_dir_all(&dir).ok();
-    }
+   }
 }

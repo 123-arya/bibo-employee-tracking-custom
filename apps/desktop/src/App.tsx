@@ -15,14 +15,8 @@ import { Browser } from "./screens/Browser";
 import { Activity } from "./screens/Activity";
 import { Settings, type AppSettings, type CaptureManaged } from "./screens/Settings";
 import { Login, type Session } from "./screens/Login";
-import { TeamOverview } from "./screens/admin/TeamOverview";
-import { Members } from "./screens/admin/Members";
-import { WorkspacePicker } from "./screens/admin/WorkspacePicker";
-import { type OwnerBusiness, type RosterEntry } from "./screens/admin/AdminDashboard";
-import { Welcome } from "./screens/Welcome";
 import { Onboarding } from "./screens/Onboarding";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
-import { MessageCenter } from "./messages/MessageCenter";
 import { AppTrayMenu } from "./components/AppTrayMenu";
 
 type Screen =
@@ -31,17 +25,15 @@ type Screen =
   | "Screenshots"
   | "Browser"
   | "Permissions"
-  | "TeamOverview"
-  | "Members"
   | "Settings";
 
-// Sidebar is grouped: "me" = this machine's own tracking (every user), "admin" =
-// owner-only team management (hidden unless isOwner), "app" = app-wide settings.
-type NavGroup = { key: "me" | "admin" | "app"; items: Screen[] };
-const NAV_GROUPS: NavGroup[] = [
-  { key: "me", items: ["Dashboard", "Activity", "Screenshots", "Browser", "Permissions"] },
-  { key: "admin", items: ["TeamOverview", "Members"] },
-  { key: "app", items: ["Settings"] },
+const NAV: Screen[] = [
+  "Dashboard",
+  "Activity",
+  "Screenshots",
+  "Browser",
+  "Permissions",
+  "Settings",
 ];
 
 /* ---- sidebar icons (stroke = currentColor, so they follow the nav item color) ---- */
@@ -92,26 +84,12 @@ const HardDriveIcon = () => (
 const UserIcon = () => (
   <svg {...svgProps} aria-hidden><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
 );
-const MembersIcon = () => (
-  <svg {...svgProps} aria-hidden>
-    <circle cx="9" cy="8" r="3.2" /><path d="M3.5 20a5.5 5.5 0 0 1 11 0" />
-    <circle cx="17.5" cy="9.5" r="2.4" /><path d="M15 20a4.5 4.5 0 0 1 6.5-4" />
-  </svg>
-);
-const TeamOverviewIcon = () => (
-  <svg {...svgProps} aria-hidden>
-    <path d="M3 3v18h18" /><rect x="7" y="10" width="3" height="7" rx="1" />
-    <rect x="12" y="6" width="3" height="11" rx="1" /><rect x="17" y="13" width="3" height="4" rx="1" />
-  </svg>
-);
 const NAV_ICON: Record<Screen, () => ReactElement> = {
   Dashboard: GridIcon,
   Activity: ActivityIcon,
   Screenshots: CameraNavIcon,
   Browser: GlobeNavIcon,
   Permissions: ShieldNavIcon,
-  TeamOverview: TeamOverviewIcon,
-  Members: MembersIcon,
   Settings: GearIcon,
 };
 
@@ -143,18 +121,6 @@ function App() {
   const [captureManaged, setCaptureManaged] = useState<CaptureManaged | null>(null);
   // undefined = still checking; null = logged out; Session = logged in.
   const [session, setSession] = useState<Session | null | undefined>(undefined);
-  // Whether the user clicked "I have an account" on the welcome screen.
-  const [showLogin, setShowLogin] = useState(false);
-  // Workspaces the signed-in user owns (via `admin_businesses`, scoped to
-  // `owner_user_id = caller` server-side). Non-empty ⇒ owner: the admin nav group
-  // shows. `bizId` is the workspace the admin screens act on (shared picker).
-  const [businesses, setBusinesses] = useState<OwnerBusiness[]>([]);
-  const [bizId, setBizId] = useState<string | null>(null);
-  const isOwner = businesses.length > 0;
-  // The member being viewed under the Members tab. Set from "View" in either the
-  // team overview or the members list; navigating via the sidebar (or switching
-  // workspace) clears it back to the roster. Its name replaces the header title.
-  const [memberDetail, setMemberDetail] = useState<RosterEntry | null>(null);
   // Installed app version (from tauri.conf.json), shown under the sidebar brand.
   const [version, setVersion] = useState<string>("");
   // Latest screen, readable from the (mount-once) analytics click listener.
@@ -183,44 +149,11 @@ function App() {
     invoke<Session | null>("current_session")
       .then((s) => setSession(s ?? null))
       .catch(() => setSession(null));
-    // Settings are local (no auth) — load them up front so the welcome/personal
-    // gate can read `local_only` before any login.
+    // Load local settings alongside the Keycloak session check.
     invoke<AppSettings>("get_settings").then(setSettings).catch(() => {});
     // Sync the native side (tray) to the UI's detected/saved language on startup.
     invoke("set_locale", { locale: i18n.resolvedLanguage ?? "en" }).catch(() => {});
   }, [i18n.resolvedLanguage]);
-
-  // Resolve owned workspaces whenever the session changes, so the admin nav group
-  // only shows for owners. Logged out / local-only (no session) ⇒ none.
-  useEffect(() => {
-    if (!session) {
-      setBusinesses([]);
-      setBizId(null);
-      return;
-    }
-    let alive = true;
-    invoke<OwnerBusiness[]>("admin_businesses")
-      .then((bs) => {
-        if (!alive) return;
-        const list = Array.isArray(bs) ? bs : [];
-        setBusinesses(list);
-        setBizId((cur) => cur ?? list[0]?.id ?? null);
-      })
-      .catch(() => {
-        if (alive) {
-          setBusinesses([]);
-          setBizId(null);
-        }
-      });
-    return () => {
-      alive = false;
-    };
-  }, [session]);
-
-  // Switching workspace drops any open member detail (it belongs to the old one).
-  useEffect(() => {
-    setMemberDetail(null);
-  }, [bizId]);
 
   // Check for a signed app update on launch and whenever the window regains focus.
   // Throttled + de-duped inside updater.ts. On a newer version it downloads silently,
@@ -250,7 +183,7 @@ function App() {
   }, [session]);
 
   // Past the auth gate when either signed in OR running in personal/local mode.
-  const pastAuthGate = session != null || settings?.local_only === true;
+  const pastAuthGate = session != null;
 
   // Reaching the welcome page re-arms onboarding: whichever path the user takes
   // from there (Only me or sign-in), the intro flow shows again afterwards.
@@ -378,7 +311,22 @@ function App() {
       setStatus(prev);
     }
   }
+  
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
 
+    listen("erpnext-logout", () => {
+      console.log("ERPNext logout detected - logging out Bibo.");
+      void signOut();
+    }).then((fn) => {
+      unlisten = fn;
+    });
+
+    return () => {
+      unlisten?.();
+    };
+  }, []);
+  
   async function signOut() {
     try {
       await invoke("logout");
@@ -394,23 +342,17 @@ function App() {
   }
 
   // Wait until we know both the session and local settings before routing.
-  if (session === undefined || settings === null) {
+  if (session === undefined) {
     return (
       <div className="login">
         <div className="muted">{t("loading")}</div>
       </div>
     );
   }
-  // No account and not in personal/local mode → the welcome/persona branch.
+  // Keycloak is the only sign-in path. Successful Keycloak auth sets the local
+  // desktop session; Login.tsx then opens ERPNext in the browser.
   if (!pastAuthGate) {
-    return showLogin ? (
-      <Login onLoggedIn={setSession} onBack={() => setShowLogin(false)} />
-    ) : (
-      <Welcome
-        onUseLocally={() => updateSettings({ local_only: true })}
-        onSignIn={() => setShowLogin(true)}
-      />
-    );
+    return <Login onLoggedIn={setSession} />;
   }
 
   // First-run onboarding (3 steps: what's captured → configure → permissions),
@@ -426,11 +368,7 @@ function App() {
       />
     );
   }
-
-  const isAdminScreen = screen === "TeamOverview" || screen === "Members";
-  // On the Members tab, a drilled-in member's name replaces the section title.
-  const headerTitle =
-    screen === "Members" && memberDetail ? memberDetail.display_name : t(`nav.${screen}`);
+ 
   const trackClass =
     status === "paused" ? "is-paused" : status === "idle" ? "is-idle" : "is-tracking";
   const pillTitle =
@@ -443,7 +381,7 @@ function App() {
   return (
     <div className="app">
       <div className="app-titlebar" onMouseDown={dragWindow}>
-        <span className="app-titlebar-title">BiBoTracking — {headerTitle}</span>
+        <span className="app-titlebar-title">BiBoTracking — {t(`nav.${screen}`)}</span>
         <AppTrayMenu status={status} onToggleTracking={toggleTracking} />
       </div>
       <div className="app-body">
@@ -461,29 +399,19 @@ function App() {
           </span>
         </div>
         <nav className="nav">
-          {NAV_GROUPS.filter((g) => g.key !== "admin" || isOwner).map((g) => (
-            <div key={g.key} className={`nav-group nav-group--${g.key}`}>
-              {g.key !== "app" && (
-                <div className="nav-group__label">{t(`nav.group.${g.key}`)}</div>
-              )}
-              {g.items.map((n) => {
-                const Ic = NAV_ICON[n];
-                return (
-                  <div
-                    key={n}
-                    className={`nav-item ${screen === n ? "active" : ""}`}
-                    onClick={() => {
-                      setScreen(n);
-                      setMemberDetail(null);
-                    }}
-                  >
-                    <span className="nav-ic"><Ic /></span>
-                    {t(`nav.${n}`)}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+          {NAV.map((n) => {
+            const Ic = NAV_ICON[n];
+            return (
+              <div
+                key={n}
+                className={`nav-item ${screen === n ? "active" : ""}`}
+                onClick={() => setScreen(n)}
+              >
+                <span className="nav-ic"><Ic /></span>
+                {t(`nav.${n}`)}
+              </div>
+            );
+          })}
         </nav>
         <div className="sidebar-foot">
           <div
@@ -510,10 +438,7 @@ function App() {
               </div>
               <button
                 className="account-link"
-                onClick={() => {
-                  setShowLogin(true);
-                  updateSettings({ local_only: false });
-                }}
+                onClick={() => updateSettings({ local_only: false })}
                 title={t("account.setupAgainTooltip")}
               >
                 {t("account.setupAgain")} <span aria-hidden>→</span>
@@ -525,15 +450,8 @@ function App() {
 
       <div className="main">
         <header className="header">
-          <h1>{headerTitle}</h1>
+          <h1>{t(`nav.${screen}`)}</h1>
           <div className="header-right">
-            {isAdminScreen && businesses.length > 0 && (
-              <WorkspacePicker
-                businesses={businesses}
-                bizId={bizId}
-                onSelect={setBizId}
-              />
-            )}
             <LanguageSwitcher compact />
             <Segmented
               options={["Light", "Dark", "System"]}
@@ -585,35 +503,6 @@ function App() {
           {screen === "Screenshots" && <Screenshots />}
           {screen === "Browser" && <Browser />}
           {screen === "Permissions" && <Permissions />}
-          {screen === "TeamOverview" &&
-            (bizId ? (
-              <TeamOverview
-                businessId={bizId}
-                businessName={businesses.find((b) => b.id === bizId)?.name ?? ""}
-                onViewEmployee={(e) => {
-                  setMemberDetail(e);
-                  setScreen("Members");
-                }}
-              />
-            ) : (
-              <div className="muted bb-adminboard__msg">{t("loading")}</div>
-            ))}
-          {screen === "Members" &&
-            (bizId ? (
-              <Members
-                businessId={bizId}
-                businessName={businesses.find((b) => b.id === bizId)?.name ?? ""}
-                businessKind={businesses.find((b) => b.id === bizId)?.kind ?? "team"}
-                onWorkspaceCreated={(biz) => {
-                  setBusinesses((prev) => [...prev, biz]);
-                  setBizId(biz.id);
-                }}
-                detail={memberDetail}
-                onView={setMemberDetail}
-              />
-            ) : (
-              <div className="muted bb-adminboard__msg">{t("loading")}</div>
-            ))}
           {screen === "Settings" && (
             <Settings
               settings={settings}
@@ -625,7 +514,6 @@ function App() {
         </main>
       </div>
       </div>
-      <MessageCenter user={session && !settings.local_only ? session.email : null} version={version} />
     </div>
   );
 }
