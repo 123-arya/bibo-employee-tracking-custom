@@ -1,0 +1,19 @@
+# Runtime
+data/
+logs/
+
+# Environment/secrets
+.env
+.env.*
+*.env
+
+# Build output
+target/
+build/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
