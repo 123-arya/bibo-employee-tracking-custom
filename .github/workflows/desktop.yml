@@ -41,6 +41,10 @@ jobs:
         working-directory: apps/desktop
         run: pnpm build
 
+      - name: Build Tauri
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+
       - name: Build Tauri application
         working-directory: apps/desktop
         run: pnpm tauri build
