@@ -43,4 +43,4 @@ jobs:
 
       - name: Build Tauri application
         working-directory: apps/desktop
-        run: pnpm tauri dev
+        run: pnpm tauri build
