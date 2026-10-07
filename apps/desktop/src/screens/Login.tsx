@@ -26,9 +26,10 @@ function initKeycloak() {
     console.log("Starting Keycloak initialization...");
 
     keycloakInitPromise = keycloak.init({
-      onLoad: "login-required",
+      onLoad: "check-sso",
       checkLoginIframe: false,
       pkceMethod: "S256",
+
     });
   }
 
@@ -57,11 +58,15 @@ export function Login({ onLoggedIn }: LoginProps) {
         }
 
         if (!authenticated) {
-          setError("Keycloak authentication failed.");
-          setLoading(false);
+          console.log("No active Keycloak session. Opening login...");
+
+          await keycloak.login({
+            prompt: "login",
+          });
+
           return;
         }
-
+        console.log("Existing Keycloak session found.");
         const email =
           keycloak.tokenParsed?.email ||
           keycloak.tokenParsed?.preferred_username ||

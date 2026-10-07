@@ -488,7 +488,7 @@ pub fn open_erpnext(app: tauri::AppHandle) -> Result<(), String> {
         .get_window("main")
         .ok_or_else(|| "Bibo main window not found".to_string())?;
 
-    let url = "http://erpnext.localhost:8000/app/home"
+    let url = "http://erpnext.localhost:8000/app"
         .parse()
         .map_err(|e| format!("Invalid ERPNext URL: {e}"))?;
 
