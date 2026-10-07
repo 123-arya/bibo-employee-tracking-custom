@@ -2,8 +2,11 @@ name: Desktop App
 
 on:
   push:
-    branches: [desktop]
-
+    branches:
+      - desktop
+  pull_request:
+    branches:
+      - desktop
 jobs:
   build:
     runs-on: ubuntu-latest
