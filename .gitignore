@@ -1,0 +1,23 @@
+# Frappe runtime
+sites/
+logs/
+*.log
+
+# Environment / secrets
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node
+node_modules/
+
+# Generated assets
+assets/
+
+# OS/editor
+.DS_Store
+.vscode/
