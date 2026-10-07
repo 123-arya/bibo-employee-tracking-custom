@@ -1,0 +1,38 @@
+name: Desktop App
+
+on:
+  push:
+    branches: [desktop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code Checkout
+        uses: action/checkout@v4
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Setup Pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.1
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        working-directory: apps/desktop
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        working-directory: apps/desktop
+        run: pnpm build
+
+      - name: Build Tauri application
+        working-directory: apps/desktop
+        run: pnpm tauri dev
