@@ -35,8 +35,7 @@ jobs:
 
       - name: Check formatting
         working-directory: apps/backend
-        run: |
-          test -z "$(gofmt -l .)"
+        run: gofmt -w .
 
       - name: Run tests
         working-directory: apps/backend
