@@ -36,13 +36,12 @@ jobs:
       - name: Check formatting
         working-directory: apps/backend
         run: |
-          files="$(gofmt -l $(find . -type f -name '*.go'))"
+          files="gofmt -w $(find . -type f -name '*.go')"
           if [ -n "$files" ]; then
             echo "These files need gofmt:"
             echo "$files"
             exit 1
           fi
-
       - name: Run tests
         working-directory: apps/backend
         run: go test ./...
