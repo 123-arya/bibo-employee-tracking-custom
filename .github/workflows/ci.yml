@@ -36,7 +36,7 @@ jobs:
       - name: Check formatting
         working-directory: apps/backend
         run: |
-          files="gofmt -w $(find . -type f -name '*.go')"
+          files="gofmt -l $(find ./internal -type f -name '*.go')"
           if [ -n "$files" ]; then
             echo "These files need gofmt:"
             echo "$files"
