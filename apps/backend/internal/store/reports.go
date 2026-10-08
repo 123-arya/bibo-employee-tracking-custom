@@ -35,7 +35,7 @@ type RosterEntry struct {
 	Email            string `json:"email"`
 	Username         string `json:"username"`
 	DisplayName      string `json:"display_name"`
-	Role             string `json:"role"` // 'owner' (self) | 'employee'
+	Role             string `json:"role"`      // 'owner' (self) | 'employee'
 	LastSeen         *int64 `json:"last_seen"` // unix seconds (the web UI expects a number)
 	ActiveTodayS     int64  `json:"active_today_s"`
 	ActiveYesterdayS int64  `json:"active_yesterday_s"`
