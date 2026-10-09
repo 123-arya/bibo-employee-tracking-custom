@@ -50,7 +50,7 @@ jobs:
         working-directory: apps/backend
         run: go build ./cmd/server
 
-      - name: Copy backend source to EC2
+      - name: Deploy backend to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
@@ -60,12 +60,14 @@ jobs:
           printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
-
           ssh -i ~/.ssh/deploy_key \
             "$EC2_USER@$EC2_HOST" '
-              if [ -d ~/bibo-employee-tracking-custom/.git ]; then
-                cd ~/bibo-employee-tracking-custom
-                git pull origin main
+              set -e
+
+              if [ -d "$HOME/bibo-employee-tracking-custom/.git" ]; then
+                cd "$HOME/bibo-employee-tracking-custom"
+                git pull --ff-only origin main
               else
-                git clone https://github.com/123-arya/bibo-employee-tracking-custom.git ~/bibo-employee-tracking-custom/
+                git clone https://github.com/123-arya/bibo-employee-tracking-custom.git \ "$HOME/bibo-employee-tracking-custom"
               fi
+            '
