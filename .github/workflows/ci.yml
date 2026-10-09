@@ -48,7 +48,8 @@ jobs:
               cd "bibo-employee-tracking-custom"
               git pull --ff-only origin main
             else
-              git clone https://github.com/123-arya/bibo-employee-tracking-custom.git \ "bibo-employee-tracking-custom"
+               git clone https://github.com/123-arya/bibo-employee-tracking-custom.git \
+               "bibo-employee-tracking-custom"
             fi
             echo "Bibo backend source deployed successfully."
           '
