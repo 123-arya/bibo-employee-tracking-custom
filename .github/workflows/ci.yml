@@ -1,5 +1,5 @@
 ```yaml
-name: Bibo Backend CI/CD
+name: Bibo Backend CI
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +28,7 @@ jobs:
         working-directory: apps/backend
         run: go test ./...
 
-      - name: Build verification
+      - name: Build backend
         working-directory: apps/backend
         run: go build ./cmd/server
 ```
