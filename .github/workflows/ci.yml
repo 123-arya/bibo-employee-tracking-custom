@@ -64,7 +64,7 @@ jobs:
           ssh -i ~/.ssh/deploy_key \
             "$EC2_USER@$EC2_HOST" '
               if [ -d ~/bibo-employee-tracking-custom/.git ]; then
-                cd ~/bibo-backend
+                cd ~/bibo-employee-tracking-custom
                 git pull origin main
               else
                 git clone https://github.com/123-arya/bibo-employee-tracking-custom.git ~/bibo-employee-tracking-custom/
