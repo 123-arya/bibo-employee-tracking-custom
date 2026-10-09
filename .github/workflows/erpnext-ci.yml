@@ -21,7 +21,14 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-
+            if [ ! -d "$HOME/bibo-employee-tracking-custom/.git" ]; then
+              git clone -b frappe https://github.com/123-arya/bibo-employee-tracking-custom.git "$HOME/bibo-employee-tracking-custom"
+            else
+              cd "$HOME/bibo-employee-tracking-custom"
+              git fetch origin
+              git checkout frappe
+              git pull --ff-only origin frappe
+            fi
             # Install Bench CLI if missing
             if ! command -v bench >/dev/null 2>&1; then
               sudo apt update
