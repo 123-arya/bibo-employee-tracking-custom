@@ -12,32 +12,32 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-steps:
-  - name: Install Bench and Deploy ERPNext
-    uses: appleboy/ssh-action@v1.2.0
-    with:
-      host: ${{ secrets.EC2_HOST }}
-      username: ${{ secrets.EC2_USER }}
-      key: ${{ secrets.EC2_SSH_KEY }}
-      script: |
-        set -e
+    steps:
+      - name: Install Bench and Deploy ERPNext
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
 
         # Install Bench CLI if missing
-        if ! command -v bench >/dev/null 2>&1; then
-          sudo apt update
-          sudo apt install -y python3-pip pipx
-          pipx ensurepath
-          export PATH="$HOME/.local/bin:$PATH"
-          pipx install frappe-bench
-        fi
+            if ! command -v bench >/dev/null 2>&1; then
+              sudo apt update
+              sudo apt install -y python3-pip pipx
+              pipx ensurepath
+              export PATH="$HOME/.local/bin:$PATH"
+              pipx install frappe-bench
+            fi
 
-        bench --version
+            bench --version
 
         # Deploy to existing Bench
-        cd ~/frappe/frappe-bench
-        bench build
-        bench --site erpnext.localhost migrate
-        bench restart
+            cd ~/frappe/frappe-bench
+            bench build
+            bench --site erpnext.localhost migrate
+            bench restart
 
-        echo "Deployment completed"
+            echo "Deployment completed"
 
