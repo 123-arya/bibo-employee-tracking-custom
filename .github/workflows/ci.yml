@@ -6,6 +6,7 @@ on:
     branches:
       - main
   pull_request:
+    branches:
       - main
 
 jobs:
@@ -20,7 +21,7 @@ jobs:
         working-directory: apps/backend
         uses: actions/setup-go@v5
         with:
-          go-version-file: '1.26.0'
+          go-version-file: apps/backend/go.mod
           cache: true
 
       - name: Test backend
