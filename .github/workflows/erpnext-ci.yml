@@ -41,7 +41,8 @@ jobs:
             bench --version
 
             # Deploy to existing Bench
-            cd ~/frappe/frappe-bench
+            mkdir frappe
+            cd ~/bibo-employee-tracking-custom/frappe
             bench build
             bench --site erpnext.localhost migrate
             bench restart
