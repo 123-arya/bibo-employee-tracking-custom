@@ -31,20 +31,17 @@ jobs:
               git pull --ff-only origin frappe
             fi
 
-#            mkdir -p "$HOME/bibo-employee-tracking-custom/frappe"
-#            echo "Frappe folder created:"
-#            ls -la "$HOME/bibo-employee-tracking-custom/frappe"
-#            cd "$HOME/bibo-employee-tracking-custom/frappe"
-            # Install Bench CLI if missing
-#            if ! command -v bench >/dev/null 2>&1; then
-#              sudo apt update
-#              sudo apt install -y python3-pip pipx
-#              pipx ensurepath
-#              export PATH="$HOME/.local/bin:$PATH"
-#              pipx install frappe-bench
-#            fi
 
-#            bench --version
+            #Install Bench CLI if missing
+            if ! command -v bench >/dev/null 2>&1; then
+              sudo apt update
+              sudo apt install -y python3-pip pipx
+              pipx ensurepath
+              export PATH="$HOME/.local/bin:$PATH"
+              pipx install frappe-bench
+            fi
+
+            bench --version
 
             # Deploy to existing Bench
 #            cd ~/bibo-employee-tracking-custom/frappe
