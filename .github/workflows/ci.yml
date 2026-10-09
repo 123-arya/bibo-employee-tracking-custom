@@ -1,4 +1,4 @@
-
+```yaml
 name: Bibo Backend CI/CD
 
 on:
@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -18,11 +19,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Go
-        working-directory: apps/backend
         uses: actions/setup-go@v5
         with:
           go-version-file: apps/backend/go.mod
-          cache: true
+          cache: false
 
       - name: Test backend
         working-directory: apps/backend
@@ -31,24 +31,4 @@ jobs:
       - name: Build verification
         working-directory: apps/backend
         run: go build ./cmd/server
-
-      - name: Deploy to EC2
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-        run: |
-          printf '%s\n' "$EC2_SSH_KEY" > deploy_key
-          chmod 600 deploy_key
-
-          ssh -o StrictHostKeyChecking=accept-new \
-            -i deploy_key "$EC2_USER@$EC2_HOST" '
-              if [ -d ~/bibo-employee-tracking-custom/.git ]; then
-                cd ~/bibo-employee-tracking-custom
-                git pull --ff-only origin main
-              else
-                git clone \
-                  https://github.com/123-arya/bibo-employee-tracking-custom.git \
-                  ~/bibo-employee-tracking-custom
-              fi
-            '
+```
