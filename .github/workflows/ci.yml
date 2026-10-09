@@ -1,4 +1,4 @@
-```yaml
+
 name: Bibo Backend CI/CD
 
 on:
@@ -47,5 +47,3 @@ jobs:
                   ~/bibo-employee-tracking-custom
               fi
             '
-```
-
