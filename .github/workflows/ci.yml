@@ -5,7 +5,8 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+  pull_request:
+      - main
 
 jobs:
   deploy:
@@ -16,15 +17,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Go
+        working-directory: apps/backend
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version-file: '1.26.0'
           cache: true
 
       - name: Test backend
+        working-directory: apps/backend
         run: go test ./...
 
       - name: Build verification
+        working-directory: apps/backend
         run: go build ./cmd/server
 
       - name: Deploy to EC2
