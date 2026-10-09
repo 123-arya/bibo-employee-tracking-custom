@@ -22,7 +22,7 @@ jobs:
           script: |
             set -e
 
-        # Install Bench CLI if missing
+            # Install Bench CLI if missing
             if ! command -v bench >/dev/null 2>&1; then
               sudo apt update
               sudo apt install -y python3-pip pipx
@@ -33,7 +33,7 @@ jobs:
 
             bench --version
 
-        # Deploy to existing Bench
+            # Deploy to existing Bench
             cd ~/frappe/frappe-bench
             bench build
             bench --site erpnext.localhost migrate
