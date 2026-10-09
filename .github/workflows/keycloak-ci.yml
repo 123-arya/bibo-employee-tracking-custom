@@ -3,8 +3,7 @@ name: Keycloak CI/CD
 on:
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - keycloak
 
 permissions:
   contents: read
