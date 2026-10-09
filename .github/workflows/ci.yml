@@ -49,3 +49,39 @@ jobs:
       - name: Build backend
         working-directory: apps/backend
         run: go build ./cmd/server
+
+      - name: Copy backend source to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+          tar --exclude=.git \
+              --exclude=.env \
+              --exclude=storage \
+              -czf backend-source.tar.gz .
+
+          scp -i ~/.ssh/deploy_key \
+            backend-source.tar.gz \
+            "$EC2_USER@$EC2_HOST:backend-source.tar.gz"
+
+      - name: Extract backend source on EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            "$EC2_USER@$EC2_HOST" '
+              set -eu
+              mkdir -p "$HOME/bibo-backend"
+              tar -xzf "$HOME/backend-source.tar.gz" \
+                -C "$HOME/bibo-backend"
+              rm -f "$HOME/backend-source.tar.gz"
+              echo "Backend source deployed."
+            '
