@@ -21,10 +21,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            if [ ! -d "$HOME/bibo-employee-tracking-custom/.git" ]; then
-              git clone -b frappe https://github.com/123-arya/bibo-employee-tracking-custom.git "$HOME/bibo-employee-tracking-custom"
+            mkdir -p "$HOME/frappe"
+            if [ ! -d "$HOME/frappe/bibo-employee-tracking-custom/.git" ]; then
+              git clone -b frappe https://github.com/123-arya/bibo-employee-tracking-custom.git "$HOME/frappe/bibo-employee-tracking-custom"
             else
-              cd "$HOME/bibo-employee-tracking-custom"
+              cd "$HOME/frappe/bibo-employee-tracking-custom"
               git fetch origin
               git checkout frappe
               git pull --ff-only origin frappe
