@@ -9,8 +9,8 @@ on:
       - frappe
 
 jobs:
-deploy:
-runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
 steps:
   - name: Install Bench and Deploy ERPNext
