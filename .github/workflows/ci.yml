@@ -44,12 +44,13 @@ jobs:
           ssh -i ~/.ssh/deploy_key \
             "$EC2_USER@$EC2_HOST" '
             set -e
-            if [ -d "bibo-employee-tracking-custom/.git" ]; then
-              cd "bibo-employee-tracking-custom"
+            cd "$HOME"
+            if [ -d "$HOME/bibo-employee-tracking-custom/.git" ]; then
+              cd "$HOME/bibo-employee-tracking-custom"
               git pull --ff-only origin main
             else
                git clone https://github.com/123-arya/bibo-employee-tracking-custom.git \
-               "bibo-employee-tracking-custom"
+               "$HOME/bibo-employee-tracking-custom"
             fi
             echo "Bibo backend source deployed successfully."
           '
