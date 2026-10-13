@@ -41,9 +41,18 @@ export function Login({ onLoggedIn }: LoginProps) {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [resetMode, setResetMode] = useState(false);
 
   useEffect(() => {
     let mounted = true;
+
+    async function testPasswordReset(key: string) {
+      try {
+        await invoke("open_erpnext_password_reset", { key });
+      } catch (error) {
+        console.error("Failed to open password reset:", error);
+      }
+    }
 
     async function startLogin() {
       try {

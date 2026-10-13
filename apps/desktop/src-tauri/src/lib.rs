@@ -14,7 +14,7 @@ mod trackers;
 
 use std::sync::Arc;
 use tauri::Manager;
-
+use tauri_plugin_deep_link::DeepLinkExt;
 /// Current unix time in seconds. Shared helper for sync bookkeeping.
 pub fn now_unix() -> i64 {
     std::time::SystemTime::now()
@@ -71,6 +71,7 @@ pub fn run() {
         // Auto-update: check a signed manifest on our own domain, download + install.
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
+	.plugin(tauri_plugin_deep_link::init())
         .invoke_handler(tauri::generate_handler![
             commands::ping,
             commands::track_event,
@@ -106,8 +107,54 @@ pub fn run() {
             commands::apply_org_policy,
             commands::capture_policy,
             commands::privacy_apps,
+	    commands::open_erpnext_password_reset,
         ])
         .setup(|app| {
+             let deep_link_app = app.handle().clone();
+
+            app.deep_link().on_open_url(move |event| {
+                for incoming in event.urls() {
+                    if incoming.scheme() != "bibo"
+                        || incoming.host_str() != Some("password-reset")
+                    {
+                        continue;
+                    }
+
+                    let target = incoming
+                        .query_pairs()
+                        .find(|(name, _)| name == "target")
+                        .map(|(_, value)| value.into_owned());
+
+                    let Some(target) = target else {
+                        continue;
+                    };
+
+                    let Ok(target_url) = url::Url::parse(&target) else {
+                        continue;
+                    };
+
+                    // Accept only the expected local ERPNext reset page.
+                    if target_url.scheme() != "http"
+                        || target_url.host_str() != Some("13.127.252.175")
+                        || target_url.port() != Some(8000)
+                        || target_url.path() != "/update-password"
+                    {
+                        continue;
+                    }
+
+                    let key = target_url
+                        .query_pairs()
+                        .find(|(name, _)| name == "key")
+                        .map(|(_, value)| value.into_owned());
+
+                    if let Some(key) = key {
+                        let _ = commands::open_erpnext_password_reset(
+                            deep_link_app.clone(),
+                            key,
+                        );
+                    }
+                }
+            });
             // Open the local SQLite DB under the app data dir.
             let data_dir = app.path().app_data_dir().expect("resolve app data dir");
             std::fs::create_dir_all(&data_dir).expect("create app data dir");

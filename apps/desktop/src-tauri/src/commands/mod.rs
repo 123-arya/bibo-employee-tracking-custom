@@ -488,7 +488,7 @@ pub fn open_erpnext(app: tauri::AppHandle) -> Result<(), String> {
         .get_window("main")
         .ok_or_else(|| "Bibo main window not found".to_string())?;
 
-    let url = "http://erpnext.localhost:8000/app"
+    let url = "http://13.127.252.175:8000/app"
         .parse()
         .map_err(|e| format!("Invalid ERPNext URL: {e}"))?;
 
@@ -519,6 +519,48 @@ pub fn open_erpnext(app: tauri::AppHandle) -> Result<(), String> {
 
     Ok(())
 }
+
+
+
+#[tauri::command]
+pub fn open_erpnext_password_reset(
+    app: tauri::AppHandle,
+    key: String,
+) -> Result<(), String> {
+    use tauri::Manager;
+
+    if key.trim().is_empty() {
+        return Err("Password reset token is missing".to_string());
+    }
+
+    if !key
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || "-_.".contains(c))
+    {
+        return Err("Invalid password reset token format".to_string());
+    }
+
+    let mut reset_url = url::Url::parse(
+        "http://13.127.252.175:8000/update-password"
+    )
+    .map_err(|e| format!("Invalid password reset URL: {e}"))?;
+
+    reset_url.query_pairs_mut().append_pair("key", &key);
+
+    let window = app
+        .get_webview_window("main")
+        .ok_or_else(|| "Bibo main window not found".to_string())?;
+
+    window
+        .navigate(reset_url)
+        .map_err(|e| format!("Failed to open password reset page: {e}"))?;
+
+    window.show().map_err(|e| e.to_string())?;
+    window.set_focus().map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 
 /// Hide the main Bibo window while keeping the Tauri process/tray alive.
 #[tauri::command]
