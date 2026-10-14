@@ -44,6 +44,7 @@ os_info = "3.15.0"
 time = { version = "0.3", features = ["formatting"] }
 tauri-plugin-deep-link = "2.6.1"
 url = "2.5.8"
+tauri-plugin-single-instance = { version = "2.5.3", features = ["deep-link"] }
 
 # macOS-only: CoreFoundation bindings used by the permission/event-tap backend.
 [target.'cfg(target_os = "macos")'.dependencies]

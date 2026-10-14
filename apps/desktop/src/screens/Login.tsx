@@ -1,9 +1,11 @@
-//import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-//import { openUrl } from "@tauri-apps/plugin-opener";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { call as invoke } from "../api";
 import { useTranslation } from "react-i18next";
 import keycloak from "../auth/keycloak";
+import {
+  getCurrent,
+  onOpenUrl,
+} from "@tauri-apps/plugin-deep-link";
 
 export type Session = {
   email: string;
@@ -15,21 +17,16 @@ type LoginProps = {
 };
 
 /*
- * Keep ONE Keycloak initialization promise.
- * This prevents React StrictMode from initializing
- * the same Keycloak instance twice.
+ * Initialize Keycloak only once.
  */
 let keycloakInitPromise: Promise<boolean> | null = null;
 
-function initKeycloak() {
+function initKeycloak(): Promise<boolean> {
   if (!keycloakInitPromise) {
-    console.log("Starting Keycloak initialization...");
-
     keycloakInitPromise = keycloak.init({
-      onLoad: "check-sso",
+      onLoad: "login-required",
       checkLoginIframe: false,
       pkceMethod: "S256",
-
     });
   }
 
@@ -41,51 +38,105 @@ export function Login({ onLoggedIn }: LoginProps) {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-//  const [resetMode, setResetMode] = useState(false);
-  
-  useEffect(() => {
-    let mounted = true;
 
-//    async function testPasswordReset(key: string) {
-//      try {
-//        await invoke("open_erpnext_password_reset", { key });
- //     } catch (error) {
- //       console.error("Failed to open password reset:", error);
-  //    }
- //  }
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    if (startedRef.current) {
+      return;
+    }
+
+    startedRef.current = true;
+
+    let disposed = false;
+    let unlisten: (() => void) | undefined;
+
+    // Prevent the same reset URL from being processed repeatedly.
+    const processedUrls = new Set<string>();
+
+    async function processResetUrl(rawUrl: string) {
+      if (disposed || processedUrls.has(rawUrl)) {
+        return;
+      }
+
+      try {
+        const url = new URL(rawUrl);
+
+        // Expected format:
+        // bibo://reset-password?key=RESET_TOKEN
+        if (
+          url.protocol !== "bibo:" ||
+          url.hostname !== "reset-password"
+        ) {
+          return;
+        }
+
+        const key = url.searchParams.get("key");
+
+        if (!key || !key.trim()) {
+          console.error("Password-reset URL is missing its key.");
+          return;
+        }
+
+        processedUrls.add(rawUrl);
+
+        console.log("Opening ERPNext password-reset page inside Bibo.");
+
+        await invoke("open_erpnext_password_reset", { key });
+      } catch (err) {
+        processedUrls.delete(rawUrl);
+
+        console.error(
+          "Failed to process password-reset deep link:",
+          err
+        );
+      }
+    }
+
+    async function setupDeepLinks() {
+      try {
+        // Handle links received while Bibo is already running.
+        unlisten = await onOpenUrl(async (urls) => {
+          for (const url of urls) {
+            await processResetUrl(url);
+          }
+        });
+
+        // Handle a link that launched Bibo from a closed state.
+        const currentUrls = await getCurrent();
+
+        if (currentUrls && !disposed) {
+          for (const url of currentUrls) {
+            await processResetUrl(url);
+          }
+        }
+      } catch (err) {
+        console.error("Deep-link initialization failed:", err);
+      }
+    }
 
     async function startLogin() {
       try {
-        console.log("Calling Keycloak init...");
+        console.log("Initializing Keycloak login.");
 
         const authenticated = await initKeycloak();
 
-        console.log("Keycloak authenticated:", authenticated);
-
-        if (!mounted) {
+        if (disposed) {
           return;
         }
 
         if (!authenticated) {
-          console.log("No active Keycloak session. Opening login...");
-
-          await keycloak.login({
-            prompt: "login",
-          });
-
-          return;
+          throw new Error("Keycloak authentication did not complete.");
         }
-        console.log("Existing Keycloak session found.");
+
         const email =
           keycloak.tokenParsed?.email ||
           keycloak.tokenParsed?.preferred_username ||
           "";
 
-        console.log("Keycloak user:", email);
-
         if (!email) {
           setError(
-              "Keycloak login succeeded, but no employee email/username was returned."
+            "Keycloak login succeeded, but no employee email or username was returned."
           );
           setLoading(false);
           return;
@@ -96,28 +147,23 @@ export function Login({ onLoggedIn }: LoginProps) {
           business_id: null,
         };
 
-        onLoggedIn(session);
-	
-//	console.log("Employee authenticated:", email);
-//	console.log("Keycloak login completed.");
-//        await openUrl("http://erpnext.localhost:8000");
-//	console.log("ERPNext opened in browser.");
-        console.log("Employee authenticated:", email);
-	console.log("Opening ERPNext inside Bibo...");
+        console.log("Authenticated employee:", email);
 
-	try {
-          await invoke("open_erpnext");
-          console.log("ERPNext embedded inside Bibo.");
-        } catch (err) {
-          console.error("Failed to open ERPNext inside Bibo:", err);
-        }
-        if (mounted) {
+        onLoggedIn(session);
+
+        /*
+         * Open ERPNext for normal login.
+         * The reset-link handler separately opens the reset page.
+         */
+        await invoke("open_erpnext");
+
+        if (!disposed) {
           setLoading(false);
         }
       } catch (err) {
-         console.error("Keycloak login error:", err);
+        console.error("Keycloak login failed:", err);
 
-        if (mounted) {
+        if (!disposed) {
           setError(
             err instanceof Error
               ? `${err.name}: ${err.message}`
@@ -129,10 +175,12 @@ export function Login({ onLoggedIn }: LoginProps) {
       }
     }
 
-    startLogin();
+    void setupDeepLinks();
+    void startLogin();
 
     return () => {
-      mounted = false;
+      disposed = true;
+      unlisten?.();
     };
   }, [onLoggedIn]);
 
@@ -141,14 +189,7 @@ export function Login({ onLoggedIn }: LoginProps) {
       <div className="login welcome">
         <div className="login-card">
           <h1 className="login-title">BiBoTracking</h1>
-
-          <p className="login-sub">{t("login.subtitle")}</p>
-
-          <div className="auth-form">
-            <p className="muted">
-              Opening Keycloak login...
-            </p>
-          </div>
+          <p>{t("loggingIn", "Connecting to your account...")}</p>
         </div>
       </div>
     );
@@ -158,27 +199,25 @@ export function Login({ onLoggedIn }: LoginProps) {
     return (
       <div className="login welcome">
         <div className="login-card">
-          <h1 className="login-title">
-            Keycloak Login Failed
-          </h1>
-
-          <div className="auth-form">
-            <div className="auth-err" role="alert">
-              {error}
-            </div>
-
-            <button
-              className="auth-btn"
-              type="button"
-              onClick={() => window.location.reload()}
-            >
-              Try Again
-            </button>
-          </div>
+          <h1 className="login-title">BiBoTracking</h1>
+          <p role="alert">{error}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+          >
+            Try again
+          </button>
         </div>
       </div>
     );
   }
 
-  return null;
+  return (
+    <div className="login welcome">
+      <div className="login-card">
+        <h1 className="login-title">BiBoTracking</h1>
+        <p>{t("loginSuccess", "Connected successfully.")}</p>
+      </div>
+    </div>
+  );
 }

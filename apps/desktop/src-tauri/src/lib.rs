@@ -66,6 +66,11 @@ pub fn run() {
     let _sentry = obs::init();
 
     tauri::Builder::default()
+	.plugin(tauri_plugin_single_instance::init(
+    	    |_app, argv, _cwd| {
+            	println!("Bibo received launch arguments: {argv:?}");
+    	    },
+        ))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         // Auto-update: check a signed manifest on our own domain, download + install.
@@ -110,6 +115,11 @@ pub fn run() {
 	    commands::open_erpnext_password_reset,
         ])
         .setup(|app| {
+	    #[cfg(any(target_os = "windows", target_os = "linux"))]
+    	    {
+        	use tauri_plugin_deep_link::DeepLinkExt;
+        	app.deep_link().register_all()?;
+            }
             // let deep_link_app = app.handle().clone();
 	    // Handle a password-reset deep link when Bibo launches from a closed state.
             if let Some(urls) = app.deep_link().get_current()? {
