@@ -67,8 +67,64 @@ pub fn run() {
 
     tauri::Builder::default()
 	.plugin(tauri_plugin_single_instance::init(
-    	    |_app, argv, _cwd| {
-            	println!("Bibo received launch arguments: {argv:?}");
+    	    |app, argv, _cwd| {
+                use tauri::Manager;
+
+                println!("Bibo received launch arguments: {argv:?}");
+
+                for arg in argv {
+                    let Ok(incoming) = url::Url::parse(&arg) else {
+                        continue;
+                };
+
+                    if incoming.scheme() != "bibo"
+                        || incoming.host_str() != Some("password-reset")
+                    {
+                        continue;
+                    }
+
+                    let target = incoming
+                        .query_pairs()
+                        .find(|(name, _)| name == "target")
+                        .map(|(_, value)| value.into_owned());
+
+                    let Some(target) = target else {
+                        continue;
+                    };
+
+                    let Ok(target_url) = url::Url::parse(&target) else {
+                        continue;
+                    };
+
+                    if target_url.scheme() != "https"
+                        || target_url.host_str() != Some("erpnext.hawkaerosystem.com")
+                        || target_url.port().is_some()
+                        || target_url.path() != "/update-password"
+                    {
+                        continue;
+                    }
+
+                    let Some(key) = target_url
+                        .query_pairs()
+                        .find(|(name, _)| name == "key")
+                        .map(|(_, value)| value.into_owned())
+                    else {
+                        continue;
+                    };
+
+                    if let Err(error) =
+                        commands::open_erpnext_password_reset(app.clone(), key)
+                    {
+                        eprintln!("Failed to open ERPNext reset page: {error}");
+                    }
+
+                    break;
+                }
+
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }       
     	    },
         ))
         .plugin(tauri_plugin_opener::init())
