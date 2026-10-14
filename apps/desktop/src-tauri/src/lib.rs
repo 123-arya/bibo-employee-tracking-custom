@@ -110,7 +110,51 @@ pub fn run() {
 	    commands::open_erpnext_password_reset,
         ])
         .setup(|app| {
-             let deep_link_app = app.handle().clone();
+            // let deep_link_app = app.handle().clone();
+	    // Handle a password-reset deep link when Bibo launches from a closed state.
+            if let Some(urls) = app.deep_link().get_current()? {
+    	       for incoming in urls {
+             	   if incoming.scheme() != "bibo"
+            	      || incoming.host_str() != Some("password-reset")
+        	   {
+            		continue;
+        	   }
+
+                   let target = incoming
+            		.query_pairs()
+            		.find(|(name, _)| name == "target")
+            		.map(|(_, value)| value.into_owned());
+
+                   let Some(target) = target else {
+            	       continue;
+        	   };
+
+                   let Ok(target_url) = url::Url::parse(&target) else {
+            	       continue;
+        	   };
+
+                   if target_url.scheme() != "https"
+            	       || target_url.host_str() != Some("erpnext.hawkaerosystem.com")
+                       || target_url.port().is_some()
+                       || target_url.path() != "/update-password"
+        	   {
+            		continue;
+        	   }
+
+                   let key = target_url
+            	       .query_pairs()
+                       .find(|(name, _)| name == "key")
+                       .map(|(_, value)| value.into_owned());
+
+                   if let Some(key) = key {
+            	       let _ = commands::open_erpnext_password_reset(
+                	   app.handle().clone(),
+                	   key,
+            	       );
+        	   }
+    	       }
+            }
+            let deep_link_app = app.handle().clone();
 
             app.deep_link().on_open_url(move |event| {
                 for incoming in event.urls() {
