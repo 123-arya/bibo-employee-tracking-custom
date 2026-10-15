@@ -63,7 +63,7 @@ export function Login({ onLoggedIn }: LoginProps) {
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-
+    let mounted = true;
     let disposed = false;
     let unlisten: (() => void) | undefined;
     let resetRequested = false;
