@@ -17,7 +17,7 @@ let keycloakInitPromise: Promise<boolean> | null = null;
 function initKeycloak(): Promise<boolean> {
   if (!keycloakInitPromise) {
     keycloakInitPromise = keycloak.init({
-      onLoad: "login-required",
+      onLoad: "check-sso",
       checkLoginIframe: false,
       pkceMethod: "S256",
     });
@@ -125,9 +125,18 @@ export function Login({ onLoggedIn }: LoginProps) {
         const authenticated = await initKeycloak();
         // A reset link takes priority over the normal ERPNext home-page redirect.
         if (disposed || resetRequested) return;
+	if (!mounted) {
+          return;
+        }
 
         if (!authenticated) {
-          throw new Error("Keycloak authentication did not complete.");
+          console.log("No active Keycloak session. Opening login...");
+
+          await keycloak.login({
+            prompt: "login",
+          });
+
+          return;
         }
 
         const email =
