@@ -40,7 +40,7 @@ function resetKeyFromDeepLink(rawUrl: string): string | null {
     const targetUrl = new URL(target);
     if (
       targetUrl.protocol !== "https:" ||
-      targetUrl.hostname !== "erpnext.hawkaerosystem.com" ||
+      targetUrl.hostname !== "erp.hawkaerosystem.com" ||
       targetUrl.port !== "" ||
       targetUrl.pathname !== "/update-password"
     ) {

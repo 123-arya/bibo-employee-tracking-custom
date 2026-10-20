@@ -488,7 +488,7 @@ pub fn open_erpnext(app: tauri::AppHandle) -> Result<(), String> {
         .get_window("main")
         .ok_or_else(|| "Bibo main window not found".to_string())?;
 
-    let url = "https://erpnext.hawkaerosystem.com/app"
+    let url = "https://erp.hawkaerosystem.com/app"
         .parse()
         .map_err(|e| format!("Invalid ERPNext URL: {e}"))?;
 
@@ -541,7 +541,7 @@ pub fn open_erpnext_password_reset(
     }
 
     let mut reset_url = url::Url::parse(
-        "https://erpnext.hawkaerosystem.com/update-password"
+        "https://erp.hawkaerosystem.com/update-password"
     )
     .map_err(|e| format!("Invalid password reset URL: {e}"))?;
 

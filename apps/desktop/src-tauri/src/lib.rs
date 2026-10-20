@@ -97,7 +97,7 @@ pub fn run() {
                     };
 
                     if target_url.scheme() != "https"
-                        || target_url.host_str() != Some("erpnext.hawkaerosystem.com")
+                        || target_url.host_str() != Some("erp.hawkaerosystem.com")
                         || target_url.port().is_some()
                         || target_url.path() != "/update-password"
                     {
@@ -203,7 +203,7 @@ pub fn run() {
 
                     // Accept only the expected local ERPNext reset page.
                     if target_url.scheme() != "https"
-                        || target_url.host_str() != Some("erpnext.hawkaerosystem.com")
+                        || target_url.host_str() != Some("erp.hawkaerosystem.com")
                         || target_url.port().is_some()
                         || target_url.path() != "/update-password"
                     {
