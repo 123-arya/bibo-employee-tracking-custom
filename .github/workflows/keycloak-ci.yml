@@ -46,5 +46,3 @@ jobs:
                   "$HOME/keycloak/bibo-employee-tracking-custom"
                 cd "$HOME/keycloak/bibo-employee-tracking-custom"
               fi
-
-              java -version
