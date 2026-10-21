@@ -174,8 +174,13 @@ pub fn run() {
 	    #[cfg(any(target_os = "windows", target_os = "linux"))]
     	    {
         	use tauri_plugin_deep_link::DeepLinkExt;
-        	app.deep_link().register_all()?;
-            }
+        	// app.deep_link().register_all()?;
+		if let Err(e) = app.deep_link().register_all() {
+                   eprintln!(
+                   	"WARNING: Deep-link registration failed; continuing startup: {e}"
+        	   );
+                }
+	    }
             // let deep_link_app = app.handle().clone();
 	    // Initial reset links are handled in Login.tsx before normal Keycloak navigation.
             let deep_link_app = app.handle().clone();
@@ -253,9 +258,16 @@ pub fn run() {
             app.manage(control.clone());
 
             // Menu bar item (Start/Stop/Open) + Dock visibility per settings.
-            tray::build(&app.handle(), control.clone())?;
-            apply_dock_policy(&app.handle(), hide_dock);
+            //tray::build(&app.handle(), control.clone())?;
+            //apply_dock_policy(&app.handle(), hide_dock);
+	    eprintln!("SETUP: Building tray");
 
+	    if let Err(e) = tray::build(&app.handle(), control.clone()) {
+    		eprintln!("ERROR: Tray setup failed: {e}");
+    		return Err(Box::new(e).into());
+	    }
+	
+	    eprintln!("SETUP: Tray built successfully");
             // Keep running when the window is closed — hide to the menu bar instead.
             // Also emit an `app_active` analytics event when the window regains focus. We do
             // this natively (WindowEvent::Focused): the JS DOM `focus`/`onFocusChanged`

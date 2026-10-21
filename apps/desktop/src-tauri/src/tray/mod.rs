@@ -63,7 +63,7 @@ fn tr(locale: &str, key: &str) -> String {
         "start" => s("Start", "开始", "開始", "Bắt đầu", "Mulai", "Démarrer", "Iniciar"),
         "stop" => s("Stop", "停止", "停止", "Dừng", "Hentikan", "Arrêter", "Detener"),
         "version" => s("Version", "版本", "バージョン", "Phiên bản", "Versi", "Version", "Versión"),
-        "quit" => s("Quit BiBoTracking", "退出 BiBoTracking", "BiBoTracking を終了", "Thoát BiBoTracking", "Keluar dari BiBoTracking", "Quitter BiBoTracking", "Salir de BiBoTracking"),
+        "quit" => s("Quit AeroSystem", "退出 AeroSystem", "AeroSystem を終了", "Thoát AeroSystem", "Keluar dari AeroSystem", "Quitter AeroSystem", "Salir de AeroSystem"),
         "tip_tracking" => s("tracking", "正在跟踪", "トラッキング中", "đang theo dõi", "melacak", "suivi en cours", "en seguimiento"),
         "tip_idle" => s("idle (not counting)", "空闲（未计数）", "アイドル（カウントなし）", "không hoạt động (không tính)", "diam (tidak menghitung)", "inactif (pas de comptage)", "inactivo (sin contar)"),
         "tip_paused" => s("paused", "已暂停", "一時停止中", "đã tạm dừng", "dijeda", "en pause", "en pausa"),
@@ -233,7 +233,7 @@ fn render(app: &AppHandle, state: State) {
             State::Idle => tr(&loc, "tip_idle"),
             State::Paused => tr(&loc, "tip_paused"),
         };
-        let tip = format!("BiBoTracking — {word}");
+        let tip = format!("AeroSystem — {word}");
         // The glyph's tint conveys the state — no separate dot/badge needed.
         let _ = tray.set_icon(Some(icon_for(state)));
         let _ = tray.set_tooltip(Some(tip));

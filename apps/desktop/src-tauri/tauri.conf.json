@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "employeetrack",
+  "productName": "AeroSystem",
   "version": "1.6.0",
-  "identifier": "com.briannguyen.bibotracking",
+  "identifier": "com.briannguyen.aerosystem",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "BiBoTracking",
+        "title": "AeroSystem",
         "width": 1040,
         "height": 720,
         "minWidth": 880,
