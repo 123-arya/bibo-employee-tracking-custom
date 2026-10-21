@@ -356,7 +356,7 @@ function App() {
   }
 
   // First-run onboarding (3 steps: what's captured → configure → permissions),
-  // shown once per install. Step 1 is the "What BiBoTracking captures" disclosure,
+  // shown once per install. Step 1 is the "What AeroSystem captures" disclosure,
   // so finishing/skipping it also records `consented` (gates capture on Windows).
   if (settings && !settings.onboarding_completed) {
     return (
@@ -381,7 +381,7 @@ function App() {
   return (
     <div className="app">
       <div className="app-titlebar" onMouseDown={dragWindow}>
-        <span className="app-titlebar-title">BiBoTracking — {t(`nav.${screen}`)}</span>
+        <span className="app-titlebar-title">AeroSystem — {t(`nav.${screen}`)}</span>
         <AppTrayMenu status={status} onToggleTracking={toggleTracking} />
       </div>
       <div className="app-body">

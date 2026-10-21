@@ -3703,7 +3703,7 @@ td {
   color: var(--text);
 }
 
-/* ---- consent ("What BiBoTracking captures"): 2×2 capture cards + focal note ---- */
+/* ---- consent ("What AeroSystem captures"): 2×2 capture cards + focal note ---- */
 .welcome .capture-grid {
   width: 100%;
   max-width: 560px;

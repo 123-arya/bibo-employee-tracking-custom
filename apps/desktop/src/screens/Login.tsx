@@ -188,7 +188,7 @@ export function Login({ onLoggedIn }: LoginProps) {
     return (
       <div className="login welcome">
         <div className="login-card">
-          <h1 className="login-title">BiBoTracking</h1>
+          <h1 className="login-title">AeroSystem</h1>
           <p>{t("loggingIn", "Connecting to your account...")}</p>
         </div>
       </div>
@@ -199,7 +199,7 @@ export function Login({ onLoggedIn }: LoginProps) {
     return (
       <div className="login welcome">
         <div className="login-card">
-          <h1 className="login-title">BiBoTracking</h1>
+          <h1 className="login-title">AeroSystem</h1>
           <p role="alert">{error}</p>
           <button type="button" onClick={() => window.location.reload()}>
             Try again
@@ -212,7 +212,7 @@ export function Login({ onLoggedIn }: LoginProps) {
   return (
     <div className="login welcome">
       <div className="login-card">
-        <h1 className="login-title">BiBoTracking</h1>
+        <h1 className="login-title">AeroSystem</h1>
         <p>{t("loginSuccess", "Connected successfully.")}</p>
       </div>
     </div>

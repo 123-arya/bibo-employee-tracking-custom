@@ -1,6 +1,6 @@
 {
   "welcome": {
-    "title": "Selamat datang di BiBoTracking",
+    "title": "Selamat datang di AeroSystem",
     "sub": "Pilih cara Anda ingin menggunakan aplikasi.",
     "local": {
       "title": "Hanya saya",
@@ -20,13 +20,13 @@
     "status": "Status",
     "paused": "Dijeda",
     "tracking": "Merekam",
-    "open": "Buka BiBoTracking",
+    "open": "Buka AeroSystem",
     "start": "Mulai merekam",
     "stop": "Hentikan rekaman",
-    "quit": "Keluar BiBoTracking"
+    "quit": "Keluar AeroSystem"
   },
   "consent": {
-    "title": "Apa yang direkam BiBoTracking",
+    "title": "Apa yang direkam AeroSystem",
     "subtitle": "Empat jenis aktivitas. Anda selalu memegang kendali.",
     "shots": {
       "t": "Tangkapan layar",
